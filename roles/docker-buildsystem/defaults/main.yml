@@ -57,7 +57,7 @@ build_system_docker_repos:
     url: git@git.novatech-llc.com:NovaTech-Testing/docker-TestStation_database_server.git
   TestStation_http_server:
     dir_name: docker-TestStation_http_server
-    url: git@git.novatech-llc.com:NovaTech-Testing/docker-TestStation_http_server.git
+    url: git@git.novatech-llc.com:andrew.cooper/docker-TestStation_http_server.git
   TestStation_ssh_server:
     dir_name: docker-TestStation_ssh_server
     url: git@git.novatech-llc.com:NovaTech-Testing/docker-TestStation_ssh_server.git
@@ -72,7 +72,7 @@ build_system_docker_repos:
     url: git@git.novatech-llc.com:NovaTech-Testing/docker-TestStation_cron_service.git
   Backup_Restore:
     dir_name: docker-TestStation_SupportSite_backup_restore
-    url: git@git.novatech-llc.com:NovaTech-Testing/docker-TestStation_SupportSite_backup_restore.git
+    url: git@git.novatech-llc.com:andrew.cooper/docker-TestStation_SupportSite_backup_restore.git
 
   TestStation_tftp_ddio_server:
     dir_name: docker-TestStation_tftp_ddio_server

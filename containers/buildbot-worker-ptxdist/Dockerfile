@@ -117,7 +117,7 @@ RUN PTXDIST_REPO=https://git.novatech-llc.com/Orion-ptxdist/ptxdist.git \
 #
 # Build PTXdist release 2012.09.1
 #
-RUN PTXDIST_REPO=https://git.novatech-llc.com/Orion-ptxdist/ptxdist.git \
+RUN PTXDIST_REPO=https://git.novatech-llc.com/andrew.cooper/ptxdist.git \
 &&  PTXDIST_BRANCH=master \
 &&  PTXDIST_VERSION=2012.09.1 \
 &&  git clone --branch ${PTXDIST_BRANCH} ${PTXDIST_REPO} ptxdist-${PTXDIST_VERSION} \
