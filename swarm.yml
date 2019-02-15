@@ -1,0 +1,75 @@
+
+- name: Launch a service
+  hosts: swarm-managers[0]
+  become: true
+  tasks:
+  - name: create haproxy config
+    docker_config:
+      data: "{{ lookup( 'template', 'haproxy.cfg.j2' ) }}"
+      name: "haproxy_cfg"
+      state: present
+    register: haproxy_cfg
+
+  - name: create haproxy dhparams
+    delegate_to: localhost
+    become: false
+    openssl_dhparam:
+      path: "{{ haproxy_dhparam_pem }}"
+      size: 4096
+      state: present
+
+  - name: add haproxy dhparams secret
+    docker_secret:
+      data: "{{ lookup('file', haproxy_dhparam_pem ) }}"
+      name: haproxy_dhparam
+      state: present
+    register: haproxy_dhparam
+
+  - name: create haproxy certificate
+    docker_secret:
+      data: |
+        {{ lookup('file', novatech_llc_com_star_crt ) }}
+        {{ lookup('file', novatech_llc_com_ca_bundle_crt ) }}
+        {{ lookup('file', novatech_llc_com_key ) }}
+      name: haproxy_cert
+      state: present
+    register: haproxy_cert
+
+  - name: launch haproxy service
+    docker_swarm_service:
+      name: haproxy
+      image: "haproxy:2.0-alpine"
+      configs:
+      - config_id: "{{ haproxy_cfg.config_id }}"
+        config_name: "haproxy_cfg"
+        filename: "/usr/local/etc/haproxy/haproxy.cfg"
+      mode: replicated
+      placement:
+        constraints:
+        - node.role == manager
+      publish:
+      - mode: ingress
+        protocol: tcp
+        published_port: 80
+        target_port: 80
+      - mode: ingress
+        protocol: tcp
+        published_port: 443
+        target_port: 443
+      - mode: ingress
+        protocol: tcp
+        published_port: 9000
+        target_port: 9000
+      secrets:
+      - filename: "/etc/ssl/private/haproxy.pem"
+        gid: 0
+        mode: 0600
+        secret_id: "{{ haproxy_cert.secret_id }}"
+        secret_name: "haproxy_cert"
+        uid: 0
+      - filename: "/etc/ssl/private/dhparam.pem"
+        gid: 0
+        mode: 0600
+        secret_id: "{{ haproxy_dhparam.secret_id }}"
+        secret_name: "haproxy_dhparam"
+        uid: 0

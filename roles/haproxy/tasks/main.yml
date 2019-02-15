@@ -7,32 +7,44 @@
     that:
     - haproxy_stats_password is defined
 
-# Setup the configuration directory
-- name: docker_container.conf dir
-  file:
-    state: directory
-    path: '{{ config_hostdir }}'
-    owner: root
-    group: root
-    mode: 'u=rwx,g=rx,o=rx'
-    recurse: no
+- name: create haproxy dhparams
+  delegate_to: localhost
+  become: false
+  openssl_dhparam:
+    path: "{{ haproxy_dhparam_pem }}"
+    size: 4096
+    state: present
 
+- name: create haproxy config
+  docker_config:
+    data: "{{ lookup( 'template', 'haproxy.cfg.j2' ) }}"
+    name: "haproxy_cfg"
+    state: present
+  register: haproxy_cfg
 
-- name: Populate config files
-  template:
-    src: "{{ item }}.j2"
-    dest: "{{ config_hostdir }}/{{ item }}"
-  loop:
-    - haproxy.cfg
+- name: add haproxy dhparams secret
+  docker_secret:
+    data: "{{ lookup('file', haproxy_dhparam_pem ) }}"
+    name: haproxy_dhparam
+    state: present
+  register: haproxy_dhparam
 
-- name: Start haproxy container
-  docker_container:
-    name: '{{ container_name }}'
-    env: '{{ container_env }}'
-    hostname: '{{ container_hostname }}'
-    image: '{{ image_name }}'
-    networks: '{{ container_networks }}'
-    ports: '{{ container_port_args }}'
-    purge_networks: true
-    state: started
-    volumes: '{{ container_volumes }}'
+- name: create haproxy certificate
+  docker_secret:
+    data: |
+      {{ novatech_llc_com_star_crt }}
+      {{ novatech_llc_com_ca_bundle_crt }}
+      {{ novatech_llc_com_key }}
+    name: haproxy_cert
+    state: present
+  register: haproxy_cert
+
+- name: launch haproxy service
+  docker_swarm_service:
+    name: '{{ service_name }}'
+    image: '{{ service_image }}'
+    configs: '{{ service_configs }}'
+    mode: replicated
+    placement: '{{ service_placement }}'
+    publish: '{{ service_publish }}'
+    secrets: '{{ service_secrets }}'

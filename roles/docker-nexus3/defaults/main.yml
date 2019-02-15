@@ -1,0 +1,37 @@
+---
+# defaults file for docker-nexus3
+nexus_version: '3.12.0-01'
+nexus_data_dir: '/nexus-data'
+
+nexus_backup_volume: nexus-backup
+nexus_data_volume: nexus-data
+nexus_default_port: 8081
+
+nexus_service_image: 'sonatype/nexus3:{{ nexus_version}}'
+nexus_service_mounts:
+  - source: '{{ nexus_data_volume }}'
+    target: '{{ nexus_data_dir }}'
+    type: 'volume'
+  - source: '{{ nexus_backup_volume }}'
+    target: '{{ nexus_backup_dir }}'
+    type: 'volume'
+nexus_service_name: 'nexus3'
+nexus_service_networks:
+  - bridge
+nexus_service_placement:
+  constraints:
+  - node.role == manager
+nexus_service_publish:
+  - mode: ingress
+    protocol: tcp
+    published_port: '{{ nexus_default_port }}'
+    target_port: '{{ nexus_default_port }}'
+nexus_service_restart_config:
+  condition: on-failure
+  delay: "5s"
+  max_attempts: "10"
+  window: "5s"
+
+# Nexus Backup
+nexus_docker_backup_dir: "{{ docker_backup_dir }}/NEXUS3"
+nexus_docker_restore_dir: "{{ bacula_dest }}{{ nexus_docker_backup_dir }}"

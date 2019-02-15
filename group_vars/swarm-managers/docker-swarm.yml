@@ -1,0 +1,32 @@
+docker_swarm_labels:
+# - hostname: threadripper
+#   labels:
+#     environment: production
+#     region: internal
+#     bacula: '0'
+#     builder: '1'
+#     OS: 'debian'
+
+# - hostname: daedalus.novatech-llc.com
+#   labels:
+#     environment: production
+#     region: internal
+#     bacula: '1'
+#     builder: '0'
+#     OS: 'centos7'
+
+- hostname: testdaedalus.novatech-llc.com
+  labels:
+    environment: staging
+    region: internal
+    bacula: '1'
+    builder: '1'
+    OS: 'centos7'
+
+# - hostname: supportsite.novatech-llc.com
+#   labels:
+#     environment: production
+#     region: external
+#     bacula: '0'
+#     builder: '0'
+#     OS: 'centos7'

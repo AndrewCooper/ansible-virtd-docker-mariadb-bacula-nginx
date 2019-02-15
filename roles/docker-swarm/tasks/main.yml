@@ -1,0 +1,68 @@
+---
+- name: Initialize swarm
+  hosts: swarm-managers[0]
+  become: true
+  tasks:
+  - name: Open firewall for docker swarm
+    firewalld:
+      immediate: yes
+      permanent: yes
+      service: docker-swarm
+      state: enabled
+      zone: public
+    when: ansible_os_family == "RedHat"
+  - name: Init a new swarm using daedalus as manager
+    docker_swarm:
+      state: present
+      advertise_addr: '{{ ansible_facts.default_ipv4.address }}'
+    register: swarm_init
+
+
+- name: Setup swarm managers
+  hosts: swarm-managers[1:]
+  become: true
+  vars:
+    swarm_facts: '{{ hostvars[groups["swarm-managers"][0]].swarm_init.swarm_facts }}'
+    manager_addr: '{{ hostvars[groups["swarm-managers"][0]].ansible_facts.default_ipv4.address }}'
+  tasks:
+  - name: Open firewall for docker swarm
+    firewalld:
+      immediate: yes
+      permanent: yes
+      service: docker-swarm
+      state: enabled
+      zone: public
+    when: ansible_os_family == "RedHat"
+  - name: Add manager to swarm
+    docker_swarm:
+      state: join
+      advertise_addr: '{{ ansible_facts.default_ipv4.address }}'
+      join_token: '{{ swarm_facts.JoinTokens.Manager }}'
+      remote_addrs: ['{{ manager_addr }}']
+
+
+- name: Setup swarm workers
+  hosts: swarm-workers
+  become: true
+  vars:
+    swarm_facts: '{{ hostvars[groups["swarm-managers"][0]].swarm_init.swarm_facts }}'
+    manager_addr: '{{ hostvars[groups["swarm-managers"][0]].ansible_facts.default_ipv4.address }}'
+  tasks:
+  - name: Add workers to swarm
+    docker_swarm:
+      state: join
+      advertise_addr: '{{ ansible_facts.default_ipv4.address }}'
+      join_token: '{{ swarm_facts.JoinTokens.Worker }}'
+      remote_addrs: ['{{ manager_addr }}']
+
+
+- name: Label swarm nodes
+  hosts: swarm-managers[0]
+  become: true
+  tasks:
+  - docker_node:
+      availability: active
+      hostname: '{{ item.hostname }}'
+      labels: '{{ item.labels }}'
+      labels_state: replace
+    loop: '{{ docker_swarm_labels }}'
