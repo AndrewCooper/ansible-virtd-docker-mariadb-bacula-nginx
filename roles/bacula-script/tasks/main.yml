@@ -63,35 +63,6 @@
     mode: 'u=rw,g=rw,o=r'
 
 # *****************************************************************************
-# Assemble the backup scripts if the assemble_scripts variable is set
-
-- name: Assemble bacula before_backup script
-  assemble:
-    src: /usr/libexec/bacula/backup-scripts/
-    regexp: '\d\d[.]before_backup.*'
-    dest: /usr/libexec/bacula/before_backup
-    owner: bacula
-    group: tape
-    mode: 'u=rwx,g=rwx,o=rx'
-  when: assemble_scripts | bool
-
-- name: Assemble bacula after_backup script
-  assemble:
-    src: /usr/libexec/bacula/backup-scripts/
-    regexp: '\d\d[.]after_backup.*'
-    dest: /usr/libexec/bacula/after_backup
-    owner: bacula
-    group: tape
-    mode: 'u=rwx,g=rwx,o=rx'
-  when: assemble_scripts | bool
-
-- name: remove assemble dir for backup scripts
-  file:
-    path: /usr/libexec/bacula/backup-scripts
-    state: absent
-  when: assemble_scripts | bool
-
-# *****************************************************************************
 # Install selinux policies
 
 - import_tasks: selinux-script-policy.yml

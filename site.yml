@@ -21,7 +21,6 @@
   - role: bacula-console
     tags: bacula-console
   - role: bacula-script
-    assemble_scripts: false
     tags: bacula-script
   - role: bacula-catalog
     tags: bacula-catalog
@@ -152,9 +151,12 @@
   become: true
   become_user: root
   become_method: sudo
-  roles:
-  - role: bacula-script
-    assemble_scripts: true
+  tags:
+  - bacula
+  tasks:
+  - import_role:
+      name: bacula-script
+      tasks_from: assemble_scripts
 
 - name: Cleanup tasks
   hosts: daedalus
