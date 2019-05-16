@@ -9,6 +9,6 @@
         token.expires_at=Time.now + 3.months;
         token.revoked=false;
         token.scopes={{ newtoken.scopes | to_json }};
-        token.token="{{ newtoken.token }}";
+        token.token_digest=Gitlab::CryptoHelper.sha256("{{ newtoken.token }}");
         token.save!'
   register: token_response
