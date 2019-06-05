@@ -84,7 +84,7 @@
 - name: First-time install admin password
   set_fact:
     current_nexus_admin_password: 'admin123'
-  when: nexus_first_install
+  when: nexus_first_install | bool
 
 - name: Subsequent re-provision admin password
   set_fact:
