@@ -102,12 +102,12 @@
     state: started
 
 - name: Wait for gitlab to be fully running
-  docker_health:
+  docker_container_info:
     name: '{{ gitlab_container_name }}'
-  register: health
+  register: info
   retries: 60
   delay: 5
-  until: health.Health.Status == "healthy"
+  until: info.container.State.Health.Status == "healthy"
 
 # *****************************************************************************
 # restore?
@@ -146,4 +146,3 @@
 # post-install configuration
 
 - include_tasks: configuration.yml
-  become: false
