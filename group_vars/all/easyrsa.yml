@@ -2,3 +2,8 @@
 easyrsa_hostname: "{{ production_role }}easyrsa.novatech-llc.com"
 
 easyrsa_ssh_port: 22
+
+easyrsa_docker_backup_dir: '{{ docker_backup_dir }}/easyrsa'
+
+# name of the data volume
+easyrsa_dv_name: '{{ docker_name_prefix }}easyrsa_DV'

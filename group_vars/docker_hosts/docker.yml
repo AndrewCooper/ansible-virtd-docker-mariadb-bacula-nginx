@@ -14,7 +14,7 @@ docker_projects_dir: '/opt/docker/{{ docker_image_tag }}'
 docker_restore_config_base_dir: '/etc/docker_container.conf/{{ docker_image_tag }}'
 
 # restore directories to temporarly store data being restored into docker containers
-docker_backup_dir: '{{ bacula_filestorage_dir }}'
+docker_backup_dir: '{{ bacula_data_dir }}'
 
 # docker service restart policy
 docker_restart_policy: 'always'

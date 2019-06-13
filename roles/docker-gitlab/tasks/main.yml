@@ -55,10 +55,6 @@
 # *****************************************************************************
 # Create the data volumes
 
-- name: backup-volume container (gitlab)
-  docker_volume:
-    name: '{{ gitlab_bv_name }}'
-
 - name: config-volume container (gitlab)
   docker_volume:
     name: '{{ gitlab_cv_name }}'
@@ -89,7 +85,7 @@
       - '{{ openssl_dv_name }}:/etc/ssl/private:z'
       - '{{ gitlab_cv_name }}:/etc/gitlab:z'
       - '{{ gitlab_dv_name }}:/var/opt/gitlab:z'
-      - '{{ gitlab_bv_name }}:{{ gitlab_bv_mountpoint }}:z'
+      - '{{ gitlab_docker_backup_dir }}:{{ gitlab_bv_mountpoint }}:z'
 
 - name: Copy config into container
   command: >

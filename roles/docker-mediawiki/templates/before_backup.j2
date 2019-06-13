@@ -1,5 +1,3 @@
-{% if wiki_docker_backup_dir is defined %}
-
 # *****************************************************************************
 # Backup WIKI data container
 docker run --rm -v {{ docker_backup_dir }}:/tmp/import_export:z debian:latest bash -c "rm -rf /tmp/import_export/WIKI"
@@ -7,4 +5,3 @@ mkdir -p -m u=rwx,g=rwx,o= {{ wiki_docker_backup_dir }}
 pushd {{ docker_restore_config_base_dir }}/{{ wiki_dv_name }}
 ./mediawiki.sh backup
 popd
-{% endif %}

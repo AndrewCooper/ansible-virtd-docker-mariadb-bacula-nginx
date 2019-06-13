@@ -148,7 +148,8 @@ case ${1} in
             --same-owner \
             --directory=${MANTISBT_BASE_DIR} \
             --to-stdout \
-            ./*
+            config_inc.php \
+            uploads/
         # Now backup the database and then unlock MantisBT
         ;;
 

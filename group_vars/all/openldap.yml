@@ -9,3 +9,11 @@ phpldapadmin_hostname: "{{ production_role }}ldap.novatech-llc.com"
 
 # the name of the container being started
 phpldapadmin_container_name: '{{ docker_name_prefix }}phpldapadmin'
+
+# restore directories to temporarly store data being restored into docker containers
+openldap_docker_backup_dir: '{{ docker_backup_dir }}/LDAP'
+openldap_docker_restore_dir: '{{ docker_backup_dir }}/LDAP'
+
+openldap_cv_name: '{{ docker_name_prefix }}openldap_CV'
+openldap_dv_name: '{{ docker_name_prefix }}openldap_DV'
+openldap_image_name: '{{ docker_registry_username }}/ldap'

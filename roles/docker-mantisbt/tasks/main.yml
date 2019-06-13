@@ -164,6 +164,9 @@
     detach: true
     env:
       MANTISBT_HOSTNAME: '{{ mantisbt_hostname }}'
+      MANTISBT_DB_DB_NAME: '{{ mantisbt_database_name }}'
+      MANTISBT_DB_USER: '{{ mantisbt_db_user }}'
+      MANTISBT_DB_PASSWORD: '{{ mantisbt_db_password | quote }}'
       MANTISBT_MAIL_USER: 'mantis'
       MANTISBT_MAIL_PASSWORD: '{{ mantisbt_email_password | quote }}'
       MANTISBT_LDAP_PASSWORD: '{{ openldap_proxyagent_password | quote }}'

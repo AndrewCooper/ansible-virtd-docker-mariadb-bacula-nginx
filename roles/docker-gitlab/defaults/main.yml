@@ -10,9 +10,6 @@ gitlab_port_args:
     - 443
     - 22
 
-# database usernames and passwords
-gitlab_db_user: novatech
-
 # the name of the image being duilt and used for the container
 gitlab_image_tag: "{{gitlab_version}}-ce.0"
 gitlab_image_name: 'gitlab/gitlab-ce:{{gitlab_image_tag}}'

@@ -253,30 +253,14 @@
   with_items: "{{ nexus_scheduled_tasks }}"
 
 - name: Configure nexus backup task
-  include: create_task_each.yml
-  with_items:
-    - name: "{{ nexus_backup_task_name }}"
+  include: call_script.yml
+  vars:
+    script_name: create_task
+    args:
+      name: db and blobstores backup
       typeId: script
-      manual: true
+      cron: "{{ nexus_backup_cron }}"
       taskProperties:
         language: groovy
         source: "{{ lookup('template', './templates/backup.groovy.j2') }}"
   when: nexus_backup_configure | bool
-
-# *****************************************************************************
-# backup script part
-
-- name: Assemble dir for backup scripts
-  file:
-    path: '{{ bacula_scripts_assembly_dir }}'
-    state: directory
-
-- name: before_backup script part
-  template:
-    src: before_backup.j2
-    dest: '{{ bacula_scripts_assembly_dir }}/55.before_backup.nexus3'
-
-- name: after_backup script part
-  template:
-    src: after_backup.j2
-    dest: '{{ bacula_scripts_assembly_dir }}/55.after_backup.nexus3'

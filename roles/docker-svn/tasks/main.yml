@@ -11,24 +11,6 @@
     recurse: no
 
 # *****************************************************************************
-# backup script part
-
-- name: Assemble dir for backup scripts
-  file:
-    path: '{{ bacula_scripts_assembly_dir }}'
-    state: directory
-
-- name: Create before_backup script
-  template:
-    src: before_backup.j2
-    dest: '{{ bacula_scripts_assembly_dir }}/55.before_backup.svn'
-
-- name: Create after_backup script
-  template:
-    src: after_backup.j2
-    dest: '{{ bacula_scripts_assembly_dir }}/55.after_backup.svn'
-
-# *****************************************************************************
 # update the Docker restore config
 
 - name: exists - state file
@@ -95,6 +77,7 @@
     volumes:
       - '{{ openssl_dv_name }}:/etc/ssl/private:z'
       - '{{ svn_dv_name }}:/var/lib/svn:z'
+      - '{{ svn_docker_restore_dir }}:/tmp/import_export:z'
 
 # *****************************************************************************
 # restore?

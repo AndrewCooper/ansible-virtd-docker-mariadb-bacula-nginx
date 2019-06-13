@@ -1,13 +1,11 @@
-{% if openssl_docker_backup_dir is defined %}
-
 # *****************************************************************************
 # Backup openssl data container
-docker run --rm -v {{ docker_backup_dir }}:/tmp/import_export:z debian:latest bash -c "rm -rf /tmp/import_export/openssl"
-mkdir -p -m u=rwx,g=rwx,o= {{ openssl_docker_backup_dir }}
-docker run --rm \
-    --volume {{ openssl_dv_name }}:/etc/ssl/private:z \
-    {{ openssl_image_name }}:{{ docker_image_tag }} \
-    backup > \
-    {{ openssl_docker_backup_dir }}{{ openssl_backup_file }}
+mkdir -p -m u=rwx,g=rwx,o= "{{ openssl_docker_backup_dir }}"
 
-{% endif %}
+printf '\n==> Backing up OpenSSL files \n'
+docker run --rm \
+    --network none \
+    --volume {{ openssl_dv_name }}:/src:z \
+    --volume {{ openssl_docker_backup_dir }}:/dest:z \
+    {{ rsync_image_name }} \
+    rsync --archive --itemize-changes --delete /src/ /dest/

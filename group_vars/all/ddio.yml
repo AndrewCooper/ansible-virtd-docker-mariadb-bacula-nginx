@@ -1,0 +1,13 @@
+
+# restore directories to temporarly store data being restored into docker containers
+backup_ddio_docker_dir: '{{ docker_backup_dir }}/ddio'
+restore_ddio_docker_dir: '{{ docker_backup_dir }}/ddio'
+
+# {{ docker_name_prefix }}TestStation_http_data_testclient
+# {{ docker_name_prefix }}TestStation_tftp_data
+# {{ docker_name_prefix }}TestStation_database_server:test_station_mysql_server
+# {{ docker_name_prefix }}teststation_supportsite_backup_restore_image
+
+# {{ docker_name_prefix }}TestStation_tftp_ddio_data
+# {{ docker_name_prefix }}TestStation_ddio_database_server:ddio_mysql_server
+teststation_supportsite_backup_restore_image: '{{ docker_registry_username }}/teststation_supportsite_backup_restore_image'

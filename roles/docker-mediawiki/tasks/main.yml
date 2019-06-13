@@ -137,6 +137,9 @@
     detach: true
     env:
       WIKI_HOSTNAME: '{{ wiki_hostname }}'
+      WIKI_DB_DB_NAME: '{{ wiki_database_name }}'
+      WIKI_DB_USER: '{{ wiki_db_user }}'
+      WIKI_DB_PASSWORD: '{{ wiki_db_password | quote }}'
       WIKI_MAIL_USER: 'wiki'
       WIKI_MAIL_PASSWORD: '{{ wiki_email_password | quote }}'
     hostname: '{{ wiki_container_name }}'

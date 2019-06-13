@@ -7,3 +7,10 @@ exim4_container_name: '{{ docker_name_prefix }}exim4'
 
 # Data volume directory for the syslog data
 exim4_syslog_datavolume_dir: '/var/log/docker_container/{{ exim4_container_name }}'
+
+# restore directories to temporarly store data being restored into docker containers
+exim4_docker_backup_dir: '{{ docker_backup_dir }}/EXIM4'
+exim4_docker_restore_dir: '{{ docker_backup_dir }}/EXIM4'
+
+# the name of the data-volume used by the container
+exim4_dv_name: '{{ docker_name_prefix }}exim4_DV'

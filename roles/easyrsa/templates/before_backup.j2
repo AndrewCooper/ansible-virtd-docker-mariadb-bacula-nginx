@@ -1,9 +1,11 @@
-{% if backup_hostdir is defined %}
-
 # *****************************************************************************
 # Backup easyrsa data container
-mkdir -p -m u=rwx,g=rwx,o= "{{ backup_hostdir }}"
-docker exec {{ container_name }} \
-    tar c -f- -C "{{data_path}}" -z . > "{{ backup_hostdir }}/{{ backup_archive }}"
+mkdir -p -m u=rwx,g=rwx,o= "{{ easyrsa_docker_backup_dir }}"
 
-{% endif %}
+printf '\n==> Backing up EasyRSA files\n'
+docker run --rm \
+    --network none \
+    --volume {{ easyrsa_dv_name }}:/src:z \
+    --volume {{ easyrsa_docker_backup_dir }}:/dest:z \
+    {{ rsync_image_name }} \
+    rsync --archive --itemize-changes --delete /src/ /dest/

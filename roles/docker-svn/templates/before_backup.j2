@@ -1,10 +1,7 @@
-{% if svn_docker_backup_dir is defined %}
-
 # *****************************************************************************
 # Backup SVN repositories
-mkdir -p -m u=rwx,g=rwx,o= {{ svn_docker_backup_dir }}
-docker run --rm \
-    --volumes-from {{ svn_container_name }} \
-    -v {{ svn_docker_backup_dir }}:/tmp/import_export:z \
-    {{ svn_image_name }}:{{ docker_image_tag }} hotcopy
-{% endif %}
+mkdir -p -m u=rwx,g=rwx,o= "{{ svn_docker_backup_dir }}"
+
+printf '\n==> Backing up Subversion repositories \n'
+docker exec {{ svn_container_name }} \
+    /docker-entrypoint.sh hotcopy

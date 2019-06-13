@@ -1,11 +1,10 @@
-{% if openldap_docker_backup_dir is defined %}
-
 # *****************************************************************************
 # backup OpenLDAP data container
-docker run --rm -v {{ docker_backup_dir }}:/tmp/import_export:z debian:latest bash -c "rm -rf /tmp/import_export/LDAP"
-mkdir -p -m u=rwx,g=rwx,o= {{ openldap_docker_backup_dir }}
+mkdir -p -m u=rwx,g=rwx,o= "{{ openldap_docker_backup_dir }}"
+
+printf '\n==> Backing up OpenLDAP databases \n'
 docker run --rm \
-    --volumes-from {{ openldap_container_name }} \
-    -v {{ openldap_docker_backup_dir }}:/tmp/import_export:z \
+    --volume {{ openldap_cv_name }}:/etc/ldap:z \
+    --volume {{ openldap_dv_name }}:/var/lib/ldap:z \
+    --volume {{ openldap_docker_backup_dir }}:/tmp/import_export:z \
     {{ openldap_image_name }}:{{ docker_image_tag }} backup
-{% endif %}

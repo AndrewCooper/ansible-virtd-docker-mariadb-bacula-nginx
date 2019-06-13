@@ -1,0 +1,1 @@
+rsync_image_name: '{{ docker_registry_username }}/rsync:{{docker_image_tag}}'

@@ -1,0 +1,32 @@
+---
+buildsystem_mysql_data_dir: '/var/lib/mysql'
+
+buildsystem_mysql_readonly_user:             'build'
+buildsystem_mysql_readonly_user_permissions:
+  - "SELECT ON *.*"
+buildsystem_mysql_readonly_user_cmd_tail:    ';'
+
+buildsystem_mysql_replication_user:          'replication'
+buildsystem_mysql_replication_user_permissions:
+  - "REPLICATION CLIENT,REPLICATION SLAVE ON *.*"
+buildsystem_mysql_replication_user_cmd_tail: ' REQUIRE SSL;'
+
+buildsystem_mysql_update_user:               'remote_update'
+buildsystem_mysql_update_user_permissions:
+  - "SELECT,UPDATE ON protocol.Orion5Table"
+  - "SELECT,UPDATE ON protocol.Orion5RTable"
+  - "SELECT,UPDATE ON records_orionrecord"
+buildsystem_mysql_update_user_cmd_tail:      ' REQUIRE SSL;'
+
+# restore directories to temporarly store data being restored into docker containers
+backup_buildsystem_docker_dir: '{{ docker_backup_dir }}/buildsystem'
+restore_buildsystem_docker_dir: '{{ docker_backup_dir }}/buildsystem'
+
+# {{ docker_name_prefix }}TestStation_http_data_testclient
+# {{ docker_name_prefix }}TestStation_tftp_data
+# {{ docker_name_prefix }}TestStation_database_server:test_station_mysql_server
+# {{ docker_name_prefix }}teststation_supportsite_backup_restore_image
+
+# {{ docker_name_prefix }}TestStation_tftp_ddio_data
+# {{ docker_name_prefix }}TestStation_ddio_database_server:ddio_mysql_server
+teststation_supportsite_backup_restore_image: '{{ docker_registry_username }}/teststation_supportsite_backup_restore_image'

@@ -1,0 +1,9 @@
+---
+# defaults file for rsync
+
+
+# directory of the image source
+image_dir: '{{ docker_projects_dir }}/rsync'
+
+# name of the image being built
+image_name: '{{ docker_registry_username }}/rsync'

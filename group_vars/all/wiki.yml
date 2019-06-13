@@ -7,3 +7,15 @@ wiki_container_name: '{{ docker_name_prefix }}wiki'
 
 # the name of the container being started
 wiki_db_container_name: '{{ docker_name_prefix }}wiki_db'
+
+# restore directories to temporarly store data being restored into docker containers
+wiki_docker_backup_dir: '{{ docker_backup_dir }}/WIKI'
+wiki_docker_restore_dir: '{{ docker_backup_dir }}/WIKI'
+
+# files restored from tape
+wiki_static_backup_file: '{{ wiki_docker_restore_dir }}/mediawiki.tar.gz'
+wiki_database_backup_file: '{{ wiki_docker_restore_dir }}/wikidb.sql.gz'
+
+# database usernames and passwords
+wiki_db_user: novatech
+wiki_database_name: wikidb

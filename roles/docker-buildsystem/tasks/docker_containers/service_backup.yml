@@ -24,7 +24,7 @@
     build:
       path: "{{ docker_projects_dir }}/{{ build_system_docker_repos.Backup_Restore.dir_name }}"
       pull: yes
-    name: "{{ name_prefix }}teststation_supportsite_backup_restore_image"
+    name: "{{ teststation_supportsite_backup_restore_image }}"
     source: build
     state: "{{ image_build_state_nondata }}"
     force_source: "{{ docker_image_force_build }}"

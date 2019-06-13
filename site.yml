@@ -50,6 +50,10 @@
   become_user: root
   become_method: sudo
   roles:
+  - name: Create rsync image
+    role: rsync
+    tags:
+    - rsync_image
   - name: Configure Docker networking
     role: docker-networking
     network_connection: '{{ daedalus_net_connection }}'
@@ -98,7 +102,6 @@
     - exim4_container
   - name: Build and start the GitLab Docker container
     role: docker-gitlab
-    gitlab_db_user: novatech
     tags:
     - gitlab_container
   - name: Build and start the MediaWIKI Docker container
@@ -114,6 +117,9 @@
     role: easyrsa
     tags:
     - easyrsa_container
+    vars:
+      backup_hostdir: '{{ easyrsa_docker_backup_dir }}'
+      data_volume: '{{ easyrsa_dv_name }}'
 
 - name: Setup LDAP users
   import_playbook: ldap_entries.yml
@@ -148,17 +154,9 @@
       svn_password: '{{ openldap_ansible_password }}'
 
 - name: Assemble Bacula backup scripts
-  hosts: bacula
-  remote_user: ansibleremote
-  become: true
-  become_user: root
-  become_method: sudo
   tags:
-  - bacula
-  tasks:
-  - import_role:
-      name: bacula-script
-      tasks_from: assemble_scripts
+    - bacula
+  import_playbook: bacula_scripts.yml
 
 - name: Cleanup tasks
   hosts: daedalus

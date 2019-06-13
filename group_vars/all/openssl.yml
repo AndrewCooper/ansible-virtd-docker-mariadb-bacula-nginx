@@ -1,0 +1,6 @@
+# restore directories to temporarly store data being restored into docker containers
+openssl_docker_backup_dir: '{{ docker_backup_dir }}/openssl'
+openssl_docker_restore_dir: '{{ docker_backup_dir }}/openssl'
+
+# the name of the data-volume used by the container
+openssl_dv_name: '{{ docker_name_prefix }}openssl_DV'

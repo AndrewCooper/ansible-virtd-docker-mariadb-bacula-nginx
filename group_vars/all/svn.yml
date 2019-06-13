@@ -2,5 +2,9 @@
 
 svn_hostname: "{{ production_role }}svn.novatech-llc.com"
 
+# restore directories to temporarly store data being restored into docker containers
+svn_docker_backup_dir: '{{ docker_backup_dir }}/SVN'
+svn_docker_restore_dir: '{{ docker_backup_dir }}/SVN'
+
 # the name of the container being started
 svn_container_name: '{{ docker_name_prefix }}svn'

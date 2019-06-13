@@ -20,7 +20,7 @@ for st in "$@"; do
     fi
 
     localbranch="upstream/$st/$branch"
-    git branch -D "$localbranch" >/dev/null 2>&1
+    git branch -D "$localbranch" >/dev/null 2>&1 || true
     git subtree split --prefix="$st" --branch "$localbranch"
 
     echo "********************************************************************************"

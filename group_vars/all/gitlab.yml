@@ -74,3 +74,10 @@ gitlab_users:
   confirm: no
   group: ntel/setup-scripts
   access_level: developer
+
+# restore directories to temporarly store data being restored into docker containers
+gitlab_docker_backup_dir: '{{ docker_backup_dir }}/GIT'
+gitlab_docker_restore_dir: '{{ docker_backup_dir }}/GIT'
+
+gitlab_version: "10.8.4"
+gitlab_bv_mountpoint: '/mnt/backups'

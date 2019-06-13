@@ -1,0 +1,24 @@
+---
+# tasks file for rsync
+- name: Create source directory
+  file:
+    path: "{{ image_dir }}"
+    state: directory
+
+- name: Deploy Source
+  synchronize:
+    archive: yes
+    checksum: yes
+    compress: yes
+    delete: yes
+    src: files/
+    dest: '{{ image_dir }}/'
+  register: deploy_source
+
+- name: Create image
+  docker_image:
+    buildargs: '{{ image_args }}'
+    name: '{{ image_name }}'
+    path: '{{ image_dir }}'
+    tag: '{{ docker_image_tag }}'
+    force: '{{ deploy_source.changed }}'

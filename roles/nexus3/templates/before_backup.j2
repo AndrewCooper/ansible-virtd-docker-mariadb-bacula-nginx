@@ -1,14 +1,23 @@
-{% if nexus_docker_backup_dir is defined %}
 
 # *****************************************************************************
 # Backup nexus3
 
-nexus_backup_task_id="{{ nexus_tasks[nexus_backup_task_name]['id'] }}"
+mkdir -p -m u=rwx,g=rwx,o= '{{ nexus_docker_backup_dir }}'
+
+nexus_credentials='--user bacula:{{ nexus_bacula_password }}'
+
+function nexus_task_get_id {
+    local taskname="$1"
+    local url="https://nexus.novatech-llc.com/service/rest/v1/tasks"
+    curl ${nexus_credentials} -s --request GET "$url" \
+        | jq -r --arg taskname "$taskname" '.items | .[] | select(.name==$taskname) | .id'
+}
 
 function nexus_task_get_state {
     local taskid="$1"
     local url="https://{{ nexus_hostname }}/service/rest/v1/tasks/${taskid}"
-    curl --user "bacula:{{ nexus_bacula_password }}" -s --request GET "$url" | python -c "import sys,json; print json.load(sys.stdin)['currentState']"
+    curl ${nexus_credentials} -s --request GET "$url" \
+        | jq -r '.currentState'
 }
 
 function nexus_task_wait_state() {
@@ -16,43 +25,40 @@ function nexus_task_wait_state() {
     local target_state="$2"
     until [ "x$target_state" = "x$(nexus_task_get_state $taskid)" ];
     do
-        sleep 10
+        sleep 5
     done
 }
 
 function nexus_task_run() {
-    local taskid="$1"
+    local taskname="$1"
+    local taskid=$(nexus_task_get_id "$taskname")
     local url="https://{{ nexus_hostname }}/service/rest/v1/tasks/${taskid}/run"
 
-    nexus_task_wait_state "$nexus_backup_task_id" "WAITING"
-    curl --user "bacula:{{ nexus_bacula_password }}" -s --request POST "$url"
-    nexus_task_wait_state "$nexus_backup_task_id" "WAITING"
+    nexus_task_wait_state "$taskid" 'WAITING'
+    curl ${nexus_credentials} -s --request POST "$url"
+    nexus_task_wait_state "$taskid" 'WAITING'
 }
 
-mkdir -p -m u=rwx,g=rwx,o= {{ nexus_docker_backup_dir }}
+printf '\n==>  Compacting Nexus "default" blobstore\n'
+time nexus_task_run '{{ nexus_compact_default_task_name }}'
 
-printf '==> Backing up Nexus database\n'
-docker exec '{{ nexus_container_name }}' bash -c '\
-    chown -R nexus:nexus "{{ nexus_backup_dir }}"; \
-    rm -rf "{{ nexus_backup_dir }}/db";'
-time nexus_task_run "$nexus_backup_task_id"
+printf '\n==>  Compacting Nexus "permanent" blobstore\n'
+time nexus_task_run '{{ nexus_compact_permanent_task_name }}'
+
+printf '\n==>  Backing up Nexus database\n'
+docker exec '{{ nexus_container_name }}' bash -c "\
+    chown -R nexus:nexus '{{ nexus_backup_dir }}'; \
+    rm -rf '{{ nexus_backup_dir }}/db';"
+time nexus_task_run '{{ nexus_backup_task_name }}'
+
+{% for blobdir in nexus_backup_blob_filter %}
+printf '\n==>  Backing up Nexus {{ blobdir }} blobstores\n'
 time docker run --rm \
     --network none \
-    --volume {{ nexus_backup_volume }}:/src:z \
-    --volume {{ nexus_docker_backup_dir }}:/dest:z \
-    instrumentisto/rsync-ssh:latest \
+    --volume '{{ nexus_data_volume }}:/src:z' \
+    --volume '{{ nexus_docker_backup_dir }}:/dest:z' \
+    '{{ rsync_image_name }}' \
     rsync --archive --itemize-changes --delete --ignore-missing-args \
-        /src/db/ \
-        /dest/db/
-
-printf '==> Backing up Nexus blobstores\n'
-time docker run --rm \
-    --network none \
-    --volume {{ nexus_data_volume }}:/src:z \
-    --volume {{ nexus_docker_backup_dir }}:/dest:z \
-    instrumentisto/rsync-ssh:latest \
-    rsync --archive --itemize-changes --delete --ignore-missing-args \
-        /src/blobs/ \
-        /dest/blobs/
-
-{% endif %}
+        '/src/blobs/{{ blobdir }}' \
+        '/dest/blobs/'
+{% endfor %}

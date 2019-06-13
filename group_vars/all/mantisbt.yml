@@ -7,3 +7,15 @@ mantisbt_container_name: '{{ docker_name_prefix }}mantisbt'
 
 # the name of the container being started
 mantisbt_db_container_name: '{{ docker_name_prefix }}mantisbt_db'
+
+# restore directories to temporarly store data being restored into docker containers
+mantisbt_docker_backup_dir: '{{ docker_backup_dir }}/MANTISBT'
+mantisbt_docker_restore_dir: '{{ docker_backup_dir }}/MANTISBT'
+
+# files restored from tape
+mantisbt_static_backup_file: '{{ mantisbt_docker_restore_dir }}/mantisbt.tar'
+mantisbt_database_backup_file: '{{ mantisbt_docker_restore_dir }}/mantisbtdb.sql'
+mantisbt_database_files_table_backup_file: '{{ mantisbt_docker_restore_dir }}/mantisbtdb-files_table.sql'
+
+mantisbt_db_user: novatech
+mantisbt_database_name: 'bugtracker'

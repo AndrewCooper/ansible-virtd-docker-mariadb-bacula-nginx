@@ -1,0 +1,24 @@
+- name: Assemble Bacula backup scripts
+  hosts: bacula
+  remote_user: ansibleremote
+  become: true
+  become_user: root
+  become_method: sudo
+  tags:
+  - bacula-script-assemble
+  tasks:
+  - debug:
+      var: item
+    with_filetree: 'templates/bacula'
+
+  - template:
+      src: '{{ item.src }}'
+      dest: '{{ bacula_scriptdir }}/{{ item.path | basename }}'
+      owner: bacula
+      group: bacula
+      mode: 'u=rwx,g=rx,o=rx'
+      seuser: system_u
+      serole: object_r
+      setype: bacula_exec_t
+    with_filetree: 'templates/bacula'
+    when: item.state == 'file'

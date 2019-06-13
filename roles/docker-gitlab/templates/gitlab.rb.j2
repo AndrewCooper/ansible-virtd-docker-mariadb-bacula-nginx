@@ -380,7 +380,7 @@ EOS
 ###! Docs: https://docs.gitlab.com/omnibus/settings/backups.html
 
 # gitlab_rails['manage_backup_path'] = true
-gitlab_rails['backup_path'] = "/mnt/backups"
+gitlab_rails['backup_path'] = "{{ gitlab_bv_mountpoint }}"
 
 ###! Docs: https://docs.gitlab.com/ce/raketasks/backup_restore.html#backup-archive-permissions
 gitlab_rails['backup_archive_permissions'] = 0644

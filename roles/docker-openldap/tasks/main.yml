@@ -120,6 +120,7 @@
       - '{{ openssl_dv_name }}:/etc/ssl/private:z'
       - '{{ openldap_cv_name }}:/etc/ldap:z'
       - '{{ openldap_dv_name }}:/var/lib/ldap:z'
+      - '{{ openldap_docker_backup_dir }}:/tmp/import_export:z'
 
 # *****************************************************************************
 # Update or make the image.

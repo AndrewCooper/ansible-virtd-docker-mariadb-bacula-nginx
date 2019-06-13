@@ -40,9 +40,9 @@ mantisbt_docker_backup_dir: '{{ docker_backup_dir }}/MANTISBT'
 mantisbt_docker_restore_dir: '{{ docker_backup_dir }}/MANTISBT'
 
 # files restored from tape
-mantisbt_static_backup_file: '/mantisbt.tar'
-mantisbt_database_backup_file: '/mantisbtdb.sql'
-mantisbt_database_files_table_backup_file: '/mantisbtdb-files_table.sql'
+mantisbt_static_backup_file: '{{ mantisbt_docker_restore_dir }}/mantisbt.tar'
+mantisbt_database_backup_file: '{{ mantisbt_docker_restore_dir }}/mantisbtdb.sql'
+mantisbt_database_files_table_backup_file: '{{ mantisbt_docker_restore_dir }}/mantisbtdb-files_table.sql'
 
 # Network names
 docker_network_frontend: 'frontend'

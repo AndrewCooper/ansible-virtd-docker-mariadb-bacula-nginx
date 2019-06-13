@@ -31,16 +31,16 @@ wiki_dv_name: '{{ docker_name_prefix }}wiki_DV'
 # the name of the mysql data-volume used by the mediawiki container
 wiki_db_dv_name: '{{ docker_name_prefix }}wiki_db_DV'
 
-# restore directories to temporarly store data being restored into docker containers
-wiki_docker_backup_dir: '{{ docker_backup_dir }}/WIKI'
-wiki_docker_restore_dir: '{{ docker_backup_dir }}/WIKI'
-
-# files restored from tape
-wiki_static_backup_file: '/mediawiki.tar'
-wiki_database_backup_file: '/wikidb.sql'
-
 # Network names
 docker_network_frontend: 'frontend'
 
 # the name of the sql database used by mediawiki
 wiki_database_name: wikidb
+
+# restore directories to temporarly store data being restored into docker containers
+mantisbt_docker_backup_dir: '{{ docker_backup_dir }}/WIKI'
+mantisbt_docker_restore_dir: '{{ docker_backup_dir }}/WIKI'
+
+# files restored from tape
+wiki_static_backup_file: '{{ wiki_docker_backup_dir }}/mediawiki.tar'
+wiki_database_backup_file: '{{ wiki_docker_backup_dir }}/wikidb.sql'

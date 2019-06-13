@@ -55,24 +55,6 @@
     volumes: '{{ container_volumes }}'
 
 # *****************************************************************************
-# backup script creation
-
-- name: Assemble dir for backup scripts
-  file:
-    path: '{{ bacula_scripts_assembly_dir }}'
-    state: directory
-
-- name: Create before_backup script
-  template:
-    src: before_backup.j2
-    dest: '{{ bacula_scripts_assembly_dir }}/55.before_backup.easyrsa'
-
-- name: Create after_backup script
-  template:
-    src: after_backup.j2
-    dest: '{{ bacula_scripts_assembly_dir }}/55.after_backup.easyrsa'
-
-# *****************************************************************************
 # restore?
 
 - name: exists - state file

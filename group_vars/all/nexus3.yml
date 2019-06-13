@@ -2,6 +2,7 @@
 nexus_version: 3.16.2
 
 nexus_hostname: "{{ production_role }}nexus.novatech-llc.com"
+
 nexus_container_name: '{{ docker_name_prefix }}nexus3'
 nexus_networks:
   - name: '{{ docker_network_frontend }}'
@@ -9,6 +10,11 @@ nexus_networks:
       - '{{ public_hostname }}'
 nexus_host_docker: true
 nexus_default_port: 8081
+
+nexus_data_volume: '{{ docker_name_prefix }}nexus3_DV'
+nexus_volumes:
+  - '{{ nexus_data_volume }}:{{ nexus_data_dir }}:z'
+  - '/tmp/docker/NEXUS3:{{ nexus_backup_dir }}:z'
 
 # Nexus Backup
 nexus_docker_backup_dir: "{{ docker_backup_dir }}/NEXUS3"

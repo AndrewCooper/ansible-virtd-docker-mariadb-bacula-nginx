@@ -108,8 +108,11 @@
   until: nexus_ping.content == "pong\n"
 
 - name: Set permissions on backup volume
-  command:
-    docker exec -u root {{nexus_container_name}} chmod 777 {{nexus_backup_dir}}
+  command: >
+    docker exec -u root '{{ nexus_container_name }}' sh -c
+    "mkdir -p '{{nexus_backup_dir}}';
+     chown -R nexus:nexus '{{nexus_backup_dir}}';
+     chmod 777 '{{nexus_backup_dir}}'"
   changed_when: false
 
 - name: Declare groovy scripts in nexus
