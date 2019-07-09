@@ -1,19 +1,30 @@
+
 ---
-bacula_storage_config_dir: "/etc/bacula"
-bacula_storage_name: "bacula-sd"
-bacula_storage_port: 9103
-bacula_storage_working_dir: "/var/spool/bacula"
-bacula_storage_pid_dir: "/var/run"
-bacula_storage_concurrent_jobs: 20
+bacula_install_prefix: /usr
+bacula_install_bindir: '{{ bacula_install_prefix }}/sbin'
+bacula_install_libdir: '{{ bacula_install_prefix }}/lib64'
+bacula_install_sysconfdir: /etc/bacula
+bacula_install_scriptdir: '{{ bacula_install_prefix }}/libexec/bacula'
+bacula_install_working_dir: '/var/spool/bacula'
+bacula_install_pid_dir: '/var/run'
+
 bacula_director_name: "bacula-dir"
 bacula_director_password: ""
+
 bacula_monitor_name: "bacula-mon"
 bacula_monitor_password: ""
-bacula_storage_device_name: "QuantumTape"
-bacula_storage_device_type: Tape
-bacula_storage_device_archive_device: "/dev/nst0"
-bacula_storage_device_media_type: "tape"
 
-# must pass in the following variables
-# bacula_director_password: ''
-# bacula_monitor_password: ''
+bacula_storage_concurrent_jobs: 20
+bacula_storage_config_dir: "{{ bacula_install_sysconfdir }}"
+bacula_storage_device_always_open: "no"
+bacula_storage_device_archive_device: "/dev/nst0"
+bacula_storage_device_automatic_mount: "yes"
+bacula_storage_device_media_type: "tape"
+bacula_storage_device_name: "QuantumTape"
+bacula_storage_device_random_access: "yes"
+bacula_storage_device_removable_media: "no"
+bacula_storage_device_type: Tape
+bacula_storage_name: "bacula-sd"
+bacula_storage_pid_dir: "{{ bacula_install_pid_dir }}"
+bacula_storage_port: 9103
+bacula_storage_working_dir: "{{ bacula_install_working_dir }}"

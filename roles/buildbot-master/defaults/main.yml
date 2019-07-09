@@ -107,4 +107,4 @@ image_dir: '{{ docker_projects_dir }}/buildbot-master'
 image_name: '{{ docker_registry_username }}/buildbot'
 
 # restoration host directory
-restore_hostdir: '{{ bacula_dest }}{{ backup_hostdir }}'
+restore_hostdir: '{{ docker_backup_dir }}/buildbot'

@@ -1,64 +1,66 @@
 ---
 
-- name: Make sure bacula user is in the tape group
-  user:
-    name: bacula
-    groups: tape
-    append: yes
+- name: Check if the bacula user ssh key exists
+  stat:
+    path: '{{ bacula_home_dir }}/.ssh/id_rsa'
+    get_checksum: False
+    get_md5: False
+  register: st_bacula_key
 
-- name: Create the docker group
+- name: Ensure the groups for bacula user exist
   group:
-    name: docker
+    name: '{{ item }}'
     system: yes
+    state: present
+  loop:
+    - bacula
+    - docker
+    - tape
 
-- name: Make sure bacula user is in the docker group
+- name: Add bacula user to groups
   user:
-    name: bacula
-    groups: docker
     append: yes
+    create_home: yes
+    generate_ssh_key: yes
+    group: bacula
+    groups:
+      - docker
+      - tape
+    home: '{{ bacula_home_dir }}'
+    name: bacula
+    password: '!'
+    ssh_key_bits: 4096
+    ssh_key_comment: "from: bacula@{{ ansible_facts.fqdn }} to: git@github.com"
+    ssh_key_type: rsa
+    state: present
 
-- name: make dir - /var/spool/bacula/.ssh/
+- name: make dir - {{ bacula_home_dir }}/.ssh/
   file:
-    path: /var/spool/bacula/.ssh/
-    state: directory
+    path: '{{ bacula_home_dir }}/.ssh/'
     owner: bacula
     group: bacula
     mode: 'u=rwx,g=,o='
+    state: directory
 
-- name: template - /var/spool/bacula/.ssh/config
+- name: template - {{ bacula_home_dir }}/.ssh/config
   template:
-    src: config
-    dest: /var/spool/bacula/.ssh/config
+    src: ssh-config.j2
+    dest: '{{ bacula_home_dir }}/.ssh/config'
     mode: 'u=rw,g=,o='
     owner: bacula
     group: bacula
     force: no
 
-- name: touch - /var/spool/bacula/.ssh/known_hosts
+- name: touch - {{ bacula_home_dir }}/.ssh/known_hosts
   file:
-    path: /var/spool/bacula/.ssh/known_hosts
+    path: '{{ bacula_home_dir }}/.ssh/known_hosts'
     state: touch
     mode: 'u=rw,g=rw,o='
     owner: bacula
     group: bacula
 
-- name: Check if the keyfile exists
-  stat:
-    path: /var/spool/bacula/.ssh/bacula@{{ ansible_fqdn }}-git@github.com
-    get_checksum: False
-    get_md5: False
-  register: st_bacula_key
-
-- name: Generate git@github.com ssh key
-  command: 'ssh-keygen -b 4098 -t rsa -P "" -f /var/spool/bacula/.ssh/bacula@{{ ansible_fqdn }}-git@github.com -C "from: bacula@{{ ansible_fqdn }} to: git@github.com"'
-  args:
-    creates: /var/spool/bacula/.ssh/bacula@{{ ansible_fqdn }}-git@github.com
-  become: true
-  become_user: bacula
-  become_method: sudo
-
 - name: Read public key
-  command: cat /var/spool/bacula/.ssh/bacula@{{ ansible_fqdn }}-git@github.com.pub
+  command: cat '{{ bacula_home_dir }}/.ssh/id_rsa.pub'
   register: bacula_key
   changed_when: false
 
@@ -67,5 +69,5 @@
 
 - name: Verify or install public key
   pause:
-    prompt: "Verify or install the git@github.com key for the bacula user (/var/spool/bacula/.ssh/bacula@{{ ansible_fqdn }}-git@github.com.pub)"
+    prompt: "Verify or install the bacula@{{ ansible_facts.fqdn }} key for the bacula user ({{ bacula_home_dir }}/.ssh/id_rsa.pub)"
   when: st_bacula_key.stat.exists == False

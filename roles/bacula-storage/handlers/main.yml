@@ -1,0 +1,10 @@
+---
+
+- name: Restart Bacula Storage Daemon
+  service:
+    name: bacula-sd
+    state: restarted
+  when: >
+    bacula_storage_service is not defined or
+    not bacula_storage_service.changed
+  listen: "restart bacula-sd"

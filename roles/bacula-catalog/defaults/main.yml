@@ -7,7 +7,7 @@ bacula_install_scriptdir: '{{ bacula_install_prefix }}/libexec/bacula'
 bacula_install_working_dir: '/var/spool/bacula'
 bacula_install_pid_dir: '/var/run'
 
-bacula_client_address: 127.0.0.1
-
-bacula_director_config_dir: "{{ bacula_install_sysconfdir }}"
-bacula_scripts_assembly_dir: "{{ bacula_install_scriptdir }}"
+bacula_bootstrap_dir: '{{ bacula_install_working_dir }}/bootstrap'
+bacula_catalog_database: bacula
+bacula_catalog_dir: '{{ bacula_install_working_dir }}/catalog'
+bacula_catalog_user: bacula

@@ -25,10 +25,6 @@
     mode: 'u=rw,g=r,o=r'
   notify: "restart docker service"
 
-- assert:
-    that: docker_thinpool_lv is defined
-  when: docker_storage_driver == "devicemapper"
-
 - name: Configure Docker Daemon (storage driver options)
   template:
     dest: /etc/systemd/system/docker.service.d/20-storage.conf

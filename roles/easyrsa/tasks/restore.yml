@@ -29,7 +29,7 @@
     command: restore
     storage: '{{ bacula_storage }}'
     fileset: '{{ bacula_fileset }}'
-    dest: '{{ bacula_dest }}'
+    dest: '{{ docker_backup_dir }}'
     path_to_restore: '{{ backup_hostdir }}'
   when: easyrsa_archive.stat.exists == False
 
@@ -57,14 +57,6 @@
 - name:
   shell: >
     docker exec  -i '{{ container_name }}' tar xz -f- -C '{{ data_path }}' < '{{ easyrsa_archive.stat.path }}'
-
-# *****************************************************************************
-# cleanup
-
-- name: Remove - Static and SQL
-  file:
-    path: '{{ restore_hostdir }}'
-    state: absent
 
 - name: State file
   copy:

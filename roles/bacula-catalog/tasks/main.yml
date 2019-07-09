@@ -1,7 +1,16 @@
 ---
 - name: Check number of files in catalog
-  command: /usr/bin/mysql bacula -B -e "select COUNT(*) From File;"
+  command: >
+    /usr/bin/mysql
+    --batch
+    --database="{{ bacula_catalog_database }}"
+    --execute="select COUNT(*) From File;"
+    --user="{{ bacula_catalog_user }}"
+    --password
+  args:
+    stdin: '{{ bacula_catalog_password }}'
   register: filecount
   changed_when: false
+
 - include_tasks: restore-catalog-with-bsr.yml
   when: filecount.stdout_lines[1] == "0"

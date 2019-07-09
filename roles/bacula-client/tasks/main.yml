@@ -4,16 +4,39 @@
     that:
     - bacula_director_password is defined
     - bacula_monitor_password is defined
+
 - name: Install/setup Bacula Client
   yum:
     name:
     - bacula-client
     state: present
+
+- name: Create configuration directory
+  file:
+    path: '{{ bacula_client_config_dir }}'
+    owner: bacula
+    group: bacula
+    seuser: system_u
+    serole: object_r
+    setype: bacula_etc_t
+    state: directory
+
 - name: Configure Bacula Client
-  template: src=bacula-fd.conf.j2 dest={{ bacula_client_config_dir }}/bacula-fd.conf
-          owner=bacula group=bacula mode=0640 backup=yes
+  template:
+    src: bacula-fd.conf.j2
+    dest: '{{ bacula_client_config_dir }}/bacula-fd.conf'
+    owner: bacula
+    group: bacula
+    mode: 0640
+  notify: "restart bacula-fd"
+
 - name: Test Bacula client configuration
   command: /usr/sbin/bacula-fd -t -c {{ bacula_client_config_dir }}/bacula-fd.conf
   changed_when: false
+
 - name: Enable and start Bacula Client
-  service: name=bacula-fd enabled=yes state=started
+  service:
+    name: bacula-fd
+    enabled: yes
+    state: started
+  register: bacula_client_service

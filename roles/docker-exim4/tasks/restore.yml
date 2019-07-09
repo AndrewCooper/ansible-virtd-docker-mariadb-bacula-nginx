@@ -29,7 +29,7 @@
     command: restore
     storage: '{{ bacula_storage }}'
     fileset: '{{ bacula_fileset }}'
-    dest: '{{ bacula_dest }}'
+    dest: '{{ docker_backup_dir }}'
     path_to_restore: '{{ exim4_docker_backup_dir }}'
   when: st_exim4_backup_file.stat.exists == False
 
@@ -54,14 +54,6 @@
 - name: restore archive
   shell: 'cat {{ exim4_docker_restore_dir }}{{ exim4_backup_file }} | docker run -i --rm --volume {{ exim4_cv_name }}:/etc/exim4:z {{ exim4_image_name }}:{{ docker_image_tag }} restore'
   when: st_exim4_backup_file.stat.exists == True
-
-# *****************************************************************************
-# cleanup
-
-- name: remove - exim4 archive
-  file:
-    path: '{{ exim4_docker_restore_dir }}'
-    state: absent
 
 - name: State file
   shell: 'date --rfc-3339=seconds > {{ docker_restore_config_base_dir }}/{{ exim4_dv_name }}/restore.date.txt'

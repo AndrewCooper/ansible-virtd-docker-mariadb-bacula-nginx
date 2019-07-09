@@ -15,17 +15,7 @@ Storage {
 #
 Director {
   Name = {{ bacula_director_name }}
-  Password = {{ bacula_director_password }}
-}
-
-#
-# Restricted Director, used by tray-monitor to get the
-#   status of the storage daemon
-#
-Director {
-  Name = {{ bacula_monitor_name }}
-  Password = {{ bacula_monitor_password }}
-  Monitor = yes
+  Password = {{ bacula_storage_password }}
 }
 
 Device {
@@ -33,15 +23,15 @@ Device {
   Device Type = {{ bacula_storage_device_type }}
   Media Type = {{ bacula_storage_device_media_type }}
   Archive Device = {{ bacula_storage_device_archive_device }}
-  AutomaticMount = yes;               # when device opened, read it
-  AlwaysOpen = yes;
-  RemovableMedia = yes;
-  RandomAccess = no;
+  AutomaticMount = {{ bacula_storage_device_automatic_mount }}
+  AlwaysOpen = {{ bacula_storage_device_always_open }}
+  RemovableMedia = {{ bacula_storage_device_removable_media }}
+  RandomAccess = {{ bacula_storage_device_random_access }}
 #  AutoChanger = yes
 }
 
-# 
-# Send all messages to the Director, 
+#
+# Send all messages to the Director,
 # mount messages also are sent to the email address
 #
 Messages {

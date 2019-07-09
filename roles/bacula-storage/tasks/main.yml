@@ -9,6 +9,17 @@
     name:
     - bacula-storage
     state: present
+
+- name: Create configuration directory
+  file:
+    path: '{{ bacula_storage_config_dir }}'
+    owner: bacula
+    group: bacula
+    seuser: system_u
+    serole: object_r
+    setype: bacula_etc_t
+    state: directory
+
 - name: Configure Bacula Storage
   template:
     src: bacula-sd.conf.j2
@@ -16,24 +27,31 @@
     owner: bacula
     group: bacula
     mode: 0640
-    backup: yes
+  notify: "restart bacula-sd"
+
+- name: Test Bacula Storage configuration
+  command: /usr/sbin/bacula-sd -t -c {{ bacula_storage_config_dir }}/bacula-sd.conf
+  changed_when: false
+
+- name: Create Storage location
+  file:
+    path: '{{ bacula_storage_device_archive_device }}'
+    owner: bacula
+    group: bacula
+    seuser: system_u
+    serole: object_r
+    setype: bacula_store_t
+    state: directory
+  when: bacula_storage_device_type == "File"
 
 # *****************************************************************************
 # Install selinux policies
 
 - import_tasks: selinux-tape-policy.yml
 
-- name: Make sure bacula user is in the tape group
-  user:
-    name: bacula
-    groups: tape
-    append: yes
-- name: Test Bacula Storage configuration
-  command: /usr/sbin/bacula-sd -t -c {{ bacula_storage_config_dir }}/bacula-sd.conf
-  changed_when: false
-
 - name: Enable and start Bacula Storage
   service:
     name: bacula-sd
     enabled: yes
     state: started
+  register: bacula_storage_service

@@ -4,16 +4,79 @@
     that:
     - bacula_director_password is defined
     - bacula_monitor_password is defined
-    - mariadb_bacula_password is defined
+    - bacula_catalog_password is defined
+
+- import_tasks: bacula-user.yml
+
+- import_tasks: mariadb_setup.yml
+
 - name: Install/setup Bacula Director
   yum:
     name:
     - bacula-director
     state: present
+  notify: "restart bacula-dir"
+
 - name: Assemble dir for backup scripts
   file:
-    path: /usr/libexec/bacula/backup-scripts
+    path: '{{ bacula_scripts_assembly_dir }}'
     state: directory
+
+- name: Create director script directory
+  file:
+    path: '{{ bacula_scriptdir }}'
+    owner: bacula
+    group: bacula
+    seuser: system_u
+    serole: object_r
+    setype: bacula_exec_t
+    state: directory
+
+- name: Create director log directory
+  file:
+    path: '{{ bacula_log_dir }}'
+    owner: bacula
+    group: bacula
+    seuser: system_u
+    serole: object_r
+    setype: bacula_log_t
+    state: directory
+
+- name: Create director pid directory
+  file:
+    path: '{{ bacula_pid_dir }}'
+    owner: bacula
+    group: bacula
+    seuser: system_u
+    serole: object_r
+    setype: var_run_t
+    state: directory
+
+- name: Create bacula configuration directory
+  file:
+    path: '{{ bacula_director_config_dir }}'
+    owner: bacula
+    group: bacula
+    seuser: system_u
+    serole: object_r
+    setype: bacula_etc_t
+    state: directory
+
+- name: Create bacula data directories
+  file:
+    path: '{{ item }}'
+    owner: bacula
+    group: bacula
+    seuser: system_u
+    serole: object_r
+    setype: bacula_var_lib_t
+    state: directory
+  loop:
+    - '{{ bacula_data_dir }}'
+    - '{{ bacula_bootstrap_dir }}'
+    - '{{ bacula_catalog_dir }}'
+    - '{{ bacula_director_working_dir }}'
+
 - name: Configure Bacula Director
   template:
     src: bacula-dir.conf.j2
@@ -21,27 +84,15 @@
     owner: bacula
     group: bacula
     mode: 0640
-    backup: yes
-  register: bacula_director_config_status
-- name: Use libbaccats-mysql
-  command: alternatives --set libbaccats.so /usr/lib64/libbaccats-mysql.so
-- import_tasks: bacula-user.yml
-- name: Check if bacula mysql database exists
-  command: mysql -u root -e "SHOW DATABASES;"
-  register: databases
-- import_tasks: mariadb_setup.yml
-  when: databases.stdout.find('bacula') == -1
+  notify: "restart bacula-dir"
+
 - name: Test Bacula Director configuration
   command: /usr/sbin/bacula-dir -t -c {{ bacula_director_config_dir }}/bacula-dir.conf
-- name: Enable and restart Bacula Director
-  service:
-    name: bacula-dir
-    enabled: yes
-    state: restarted
-  when: bacula_director_config_status.changed
+  changed_when: false
+
 - name: Enable and start Bacula Director
   service:
     name: bacula-dir
     enabled: yes
     state: started
-  when: not bacula_director_config_status.changed
+  register: bacula_director_service

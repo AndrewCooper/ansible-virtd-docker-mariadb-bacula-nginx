@@ -73,38 +73,38 @@
 
 - name: Assemble dir for backup scripts
   file:
-    path: /usr/libexec/bacula/backup-scripts
+    path: '{{ bacula_scripts_assembly_dir }}'
     state: directory
 
 - name: Create before_backup script for the Build System
   template:
     src: before_backup_buildsystem.j2
-    dest: /usr/libexec/bacula/backup-scripts/56.before_backup.buildsystem
+    dest: '{{ bacula_scripts_assembly_dir }}/56.before_backup.buildsystem'
 
 - name: Create before_backup script for DDIO
   template:
     src: before_backup_ddio.j2
-    dest: /usr/libexec/bacula/backup-scripts/56.before_backup.ddio
+    dest: '{{ bacula_scripts_assembly_dir }}/56.before_backup.ddio'
 
 - name: Create before_backup script for the Support Site
   template:
     src: before_backup_supportsite.j2
-    dest: /usr/libexec/bacula/backup-scripts/56.before_backup.supportsite
+    dest: '{{ bacula_scripts_assembly_dir }}/56.before_backup.supportsite'
 
 - name: Create after_backup script for the Build System
   template:
     src: after_backup_buildsystem.j2
-    dest: /usr/libexec/bacula/backup-scripts/56.after_backup.buildsystem
+    dest: '{{ bacula_scripts_assembly_dir }}/56.after_backup.buildsystem'
 
 - name: Create after_backup script for DDIO
   template:
     src: after_backup_ddio.j2
-    dest: /usr/libexec/bacula/backup-scripts/56.after_backup.ddio
+    dest: '{{ bacula_scripts_assembly_dir }}/56.after_backup.ddio'
 
 - name: Create after_backup script for the Support Site
   template:
     src: after_backup_supportsite.j2
-    dest: /usr/libexec/bacula/backup-scripts/56.after_backup.supportsite
+    dest: '{{ bacula_scripts_assembly_dir }}/56.after_backup.supportsite'
 
 
 # *****************************************************************************

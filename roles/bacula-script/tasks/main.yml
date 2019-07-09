@@ -1,30 +1,22 @@
 ---
 
-- name: copy - delete_catalog_backup
-  copy:
-    src: delete_catalog_backup
-    dest: /usr/libexec/bacula/delete_catalog_backup
-    owner: bacula
-    group: tape
-    mode: 'u=rwx,g=rx,o=rx'
-
 - name: template - bacula-bootstrap-backup
   template:
     src: bacula-bootstrap-backup
-    dest: /usr/libexec/bacula/bacula-bootstrap-backup
+    dest: '{{ bacula_scripts_bootstrap_backup }}'
     owner: bacula
     group: tape
     mode: 'u=rwx,g=rx,o=rx'
 
 - name: run bacula-bootstrap-backup
-  command: /usr/libexec/bacula/bacula-bootstrap-backup
+  command: '{{ bacula_scripts_bootstrap_backup }}'
   become: true
   become_user: bacula
   become_method: sudo
 
 - name: Assemble dir for backup scripts
   file:
-    path: /usr/libexec/bacula/backup-scripts
+    path: '{{ bacula_scripts_assembly_dir }}'
     state: directory
     owner: bacula
     group: tape
@@ -33,7 +25,7 @@
 - name: Create before_backup script header
   template:
     src: before_backup_head.j2
-    dest: /usr/libexec/bacula/backup-scripts/00.before_backup
+    dest: '{{ bacula_scripts_assembly_dir }}/00.before_backup'
     owner: bacula
     group: tape
     mode: 'u=rw,g=rw,o=r'
@@ -41,7 +33,7 @@
 - name: Create before_backup script footer
   template:
     src: before_backup_foot.j2
-    dest: /usr/libexec/bacula/backup-scripts/99.before_backup
+    dest: '{{ bacula_scripts_assembly_dir }}/99.before_backup'
     owner: bacula
     group: tape
     mode: 'u=rw,g=rw,o=r'
@@ -49,7 +41,7 @@
 - name: Create after_backup script header
   template:
     src: after_backup_head.j2
-    dest: /usr/libexec/bacula/backup-scripts/00.after_backup
+    dest: '{{ bacula_scripts_assembly_dir }}/00.after_backup'
     owner: bacula
     group: tape
     mode: 'u=rw,g=rw,o=r'
@@ -57,7 +49,7 @@
 - name: Create after_backup script footer
   template:
     src: after_backup_foot.j2
-    dest: /usr/libexec/bacula/backup-scripts/99.after_backup
+    dest: '{{ bacula_scripts_assembly_dir }}/99.after_backup'
     owner: bacula
     group: tape
     mode: 'u=rw,g=rw,o=r'

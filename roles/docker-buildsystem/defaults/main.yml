@@ -17,7 +17,7 @@ test_ssh:
 
 # restore directories to temporarly store data being restored into docker containers
 backup_buildsystem_docker_dir: '{{ docker_backup_dir }}/buildsystem'
-restore_buildsystem_docker_dir: '{{ bacula_dest }}{{ backup_buildsystem_docker_dir }}'
+restore_buildsystem_docker_dir: '{{ docker_backup_dir }}/buildsystem'
 
 backup_supportsite_docker_dir: '{{ docker_backup_dir }}/supportsite'
 

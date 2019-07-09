@@ -1,13 +1,28 @@
 ---
+- name: Use libbaccats-mysql
+  alternatives:
+    link: '{{ bacula_install_libdir }}/libbaccats.so'
+    name: libbaccats.so
+    path: '{{ bacula_install_libdir }}/libbaccats-mysql.so'
+
+# - name: Flush mysql privileges
+#   shell: mysql -u root -e "FLUSH PRIVILEGES;"
+
+- name: Create bacula mysql database
+  mysql_db:
+    name: '{{ bacula_catalog_database }}'
+    state: present
+
 - name: Create bacula mysql user
-  shell: mysql -u root -e "CREATE USER 'bacula'@'localhost';"
-- name: Set bacula mysql user password
-  shell: mysql -u root -e "SET PASSWORD FOR 'bacula'@'localhost' = PASSWORD(\"{{ mariadb_bacula_password }}\");"
-- name: Flush mysql privileges
-  shell: mysql -u root -e "FLUSH PRIVILEGES;"
-- name: Grant mysql privileges
-  shell: /usr/libexec/bacula/grant_mysql_privileges -u root
-- name: Create mysql database
-  shell: /usr/libexec/bacula/create_mysql_database -u root
+  mysql_user:
+    host_all: no
+    name: '{{ bacula_catalog_user }}'
+    password: '{{ bacula_catalog_password }}'
+    priv: '{{ bacula_catalog_database }}.*:ALL'
+    state: present
+    update_password: always
+
 - name: Make mysql tables
-  shell: /usr/libexec/bacula/make_mysql_tables -u root
+  command: >
+    {{ bacula_install_scriptdir }}/make_mysql_tables
+    -u root

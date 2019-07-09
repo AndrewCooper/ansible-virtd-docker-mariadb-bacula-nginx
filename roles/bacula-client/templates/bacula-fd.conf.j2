@@ -7,7 +7,7 @@
 #
 Director {
   Name = {{ bacula_director_name }}
-  Password = {{ bacula_director_password }}
+  Password = {{ bacula_client_password }}
 }
 
 #
@@ -32,7 +32,9 @@ FileDaemon {
   FDAddress = {{ bacula_client_address }}
 }
 
+#
 # Send all messages except skipped files back to Director
+#
 Messages {
   Name = Standard
   director = {{ bacula_director_name }} = all, !skipped, !restored

@@ -1,2 +1,7 @@
 ---
 bacula_dest: /mnt/backups/bacula-restores
+
+bacula_storage_device_name: "FileStorage"
+bacula_storage_device_type: File
+bacula_storage_device_archive_device: "{{ bacula_data_dir }}/volumes"
+bacula_storage_device_media_type: "File"

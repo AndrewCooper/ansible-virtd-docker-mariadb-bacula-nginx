@@ -27,8 +27,9 @@
     command: restore
     storage: '{{ bacula_storage }}'
     fileset: '{{ bacula_fileset }}'
-    dest: '{{ bacula_dest }}'
+    dest: '{{ docker_backup_dir }}'
     path_to_restore: '{{ backup_buildsystem_docker_dir }}'
+    strip_prefix: '{{ docker_backup_dir }}'
   when: buildsystem_restore_files.file_list == []
 
 - name: find files
@@ -110,11 +111,6 @@
 
 # *****************************************************************************
 # cleanup
-
-- name: Remove files
-  file:
-    path: '{{ restore_buildsystem_docker_dir }}'
-    state: absent
 
 - name: State file
   shell: 'date --rfc-3339=seconds > {{ docker_restore_config_base_dir }}/buildsystem/restore.date.txt'

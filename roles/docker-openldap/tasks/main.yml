@@ -23,18 +23,18 @@
 
 - name: Assemble dir for backup scripts
   file:
-    path: /usr/libexec/bacula/backup-scripts
+    path: '{{ bacula_scripts_assembly_dir }}'
     state: directory
 
 - name: before_backup script part
   template:
     src: before_backup.j2
-    dest: /usr/libexec/bacula/backup-scripts/55.before_backup.openldap
+    dest: '{{ bacula_scripts_assembly_dir }}/55.before_backup.openldap'
 
 - name: after_backup script part
   template:
     src: after_backup.j2
-    dest: /usr/libexec/bacula/backup-scripts/55.after_backup.openldap
+    dest: '{{ bacula_scripts_assembly_dir }}/55.after_backup.openldap'
 
 # *****************************************************************************
 # update the Docker restore config

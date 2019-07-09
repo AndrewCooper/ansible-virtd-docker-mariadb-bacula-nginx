@@ -1,0 +1,10 @@
+---
+
+- name: Restart Bacula Director
+  service:
+    name: bacula-dir
+    state: restarted
+  when: >
+    bacula_director_service is not defined or
+    not bacula_director_service.changed
+  listen: "restart bacula-dir"

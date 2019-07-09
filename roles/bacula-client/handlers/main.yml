@@ -1,0 +1,10 @@
+---
+
+- name: Restart Bacula Client
+  service:
+    name: bacula-fd
+    state: restarted
+  when: >
+    bacula_client_service is not defined or
+    not bacula_client_service.changed
+  listen: "restart bacula-fd"

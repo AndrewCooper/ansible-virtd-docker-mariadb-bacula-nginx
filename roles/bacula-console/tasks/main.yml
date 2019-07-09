@@ -3,11 +3,27 @@
   assert:
     that:
     - bacula_director_password is defined
+
 - name: Install/setup Bacula Console
   yum:
     name:
     - bacula-console
     state: present
+
+- name: Create configuration directory
+  file:
+    path: '{{ bacula_console_config_dir }}'
+    owner: bacula
+    group: bacula
+    seuser: system_u
+    serole: object_r
+    setype: bacula_etc_t
+    state: directory
+
 - name: Configure Bacula Console
-  template: src=bconsole.conf.j2 dest={{ bacula_console_config_dir }}/bconsole.conf
-          owner=bacula group=bacula mode=0640 backup=yes
+  template:
+    src: bconsole.conf.j2
+    dest: '{{ bacula_console_config_dir }}/bconsole.conf'
+    owner: bacula
+    group: bacula
+    mode: 0640

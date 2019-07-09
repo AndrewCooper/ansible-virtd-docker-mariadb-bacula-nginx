@@ -1,0 +1,64 @@
+---
+
+bacula_install_prefix: '/usr'
+bacula_install_bindir: '{{ bacula_install_prefix }}/sbin'
+bacula_install_libdir: '{{ bacula_install_prefix }}/lib64'
+bacula_install_sysconfdir: '/etc/bacula'
+bacula_install_scriptdir: '{{ bacula_install_prefix }}/libexec/bacula'
+bacula_install_working_dir: '/var/spool/bacula'
+bacula_install_pid_dir: '/var/run'
+
+bacula_scriptdir: '{{ bacula_install_scriptdir }}'
+bacula_sysconfdir: '{{ bacula_install_sysconfdir }}'
+
+bacula_home_dir: '/home/bacula'
+bacula_data_dir: '/var/lib/bacula'
+
+bacula_log_dir: '/var/log/bacula'
+bacula_pid_dir: '/var/run/bacula'
+bacula_working_dir: '{{ bacula_data_dir }}/state'
+bacula_scripts_bootstrap_backup: "{{ bacula_scriptdir }}/bacula-bootstrap-backup"
+
+bacula_bootstrap_dir: "{{ bacula_data_dir }}/bootstrap"
+bacula_catalog_dir: '{{ bacula_data_dir }}/catalog'
+
+bacula_client_address: "127.0.0.1"
+bacula_client_concurrent_jobs: '20'
+bacula_client_config_dir: "{{ bacula_sysconfdir }}"
+bacula_client_name: "bacula-fd"
+bacula_client_password: '{{ lookup("password", playbook_dir + "/credentials/bacula/client", length=20) }}'
+bacula_client_pid_dir: "{{ bacula_pid_dir }}"
+bacula_client_port: '9102'
+bacula_client_working_dir: "{{ bacula_working_dir }}"
+
+bacula_catalog_address: "127.0.0.1"
+bacula_catalog_database: 'bacula'
+bacula_catalog_password: '{{ lookup("password", playbook_dir + "/credentials/bacula/mariadb" , length=20) }}'
+bacula_catalog_user: 'bacula'
+
+bacula_console_config_dir: "{{ bacula_sysconfdir }}"
+bacula_console_password: '{{ lookup("password", playbook_dir + "/credentials/bacula/console", length=20) }}'
+
+bacula_director_address: "127.0.0.1"
+bacula_director_config_dir: "{{ bacula_sysconfdir }}"
+bacula_director_name: "bacula-dir"
+bacula_director_password: '{{ lookup("password", playbook_dir + "/credentials/bacula/director", length=20) }}'
+bacula_director_port: '9101'
+bacula_director_working_dir: "{{ bacula_working_dir }}"
+bacula_director_query_file: '{{ bacula_sysconfdir }}/{{ bacula_director_name }}_query.sql'
+
+bacula_monitor_name: "bacula-mon"
+bacula_monitor_password: '{{ lookup("password", playbook_dir + "/credentials/bacula/monitor" , length=20) }}'
+
+bacula_storage_address: "127.0.0.1"
+bacula_storage_concurrent_jobs: '20'
+bacula_storage_config_dir: "{{ bacula_sysconfdir }}"
+bacula_storage_device_archive_device: "/dev/nst0"
+bacula_storage_device_media_type: "tape"
+bacula_storage_device_name: "QuantumTape"
+bacula_storage_device_type: Tape
+bacula_storage_name: "bacula-sd"
+bacula_storage_password: '{{ lookup("password", playbook_dir + "/credentials/bacula/storage", length=20) }}'
+bacula_storage_pid_dir: "{{ bacula_pid_dir }}"
+bacula_storage_port: '9103'
+bacula_storage_working_dir: "{{ bacula_working_dir }}"

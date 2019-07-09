@@ -39,18 +39,18 @@
 
 # - name: Assemble dir for backup scripts
 #   file:
-#     path: /usr/libexec/bacula/backup-scripts
+#     path: '{{ bacula_scripts_assembly_dir }}/'
 #     state: directory
 
 # - name: Create before_backup script
 #   template:
 #     src: before_backup.j2
-#     dest: /usr/libexec/bacula/backup-scripts/55.before_backup.exim4
+#     dest: '{{ bacula_scripts_assembly_dir }}//55.before_backup.exim4'
 
 # - name: Create after_backup script
 #   template:
 #     src: after_backup.j2
-#     dest: /usr/libexec/bacula/backup-scripts/55.after_backup.exim4
+#     dest: '{{ bacula_scripts_assembly_dir }}//55.after_backup.exim4'
 
 # *****************************************************************************
 # update the Docker restore config
