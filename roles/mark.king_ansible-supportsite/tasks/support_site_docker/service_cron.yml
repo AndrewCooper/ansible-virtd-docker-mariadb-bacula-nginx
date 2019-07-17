@@ -1,0 +1,19 @@
+---
+#=========================================================
+# CRON Service Container
+#---------------------------------------------------------
+- name: Build docker image ----- Support Site cron service
+  docker_image:
+    name: "{{ docker_name_prefix }}supportsite_cron_service_image"
+    path: "{{ repo_destination }}/{{ supportsite_docker_repos.SupportSite_cron_service.dir_name }}"
+    state: "{{ image_build_state_nondata }}"
+
+- name: Start docker container - Support Site cron service
+  docker:
+    detach: True
+    image: "{{ docker_name_prefix }}supportsite_cron_service_image"
+    name: "{{ docker_name_prefix }}SupportSite_cron_service"
+    state: "{{ container_start_state_nondata }}"
+    restart_policy: always
+    volumes_from:
+      - "{{ docker_name_prefix }}SupportSite_http_data_ncdzip"

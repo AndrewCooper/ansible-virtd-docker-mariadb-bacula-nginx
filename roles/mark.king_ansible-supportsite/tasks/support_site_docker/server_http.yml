@@ -1,0 +1,32 @@
+---
+#=========================================================
+# HTTP Server Container
+#---------------------------------------------------------
+#- name: Make sure open ssl tar file is present
+#  wait_for:
+#    path: "{{ repo_destination }}/docker-SupportSite_http_server/openssl.tar"
+#    timeout: 1800
+#
+- name: Build docker image ----- Support Site http server
+  docker_image:
+    name: "{{ docker_name_prefix }}supportsite_http_server_image"
+    path: "{{ repo_destination }}/{{ supportsite_docker_repos.SupportSite_http_server.dir_name }}"
+    state: "{{ image_build_state_nondata }}"
+
+- name: Start docker container - Support Site http server
+  docker:
+    detach: True
+    image: "{{ docker_name_prefix }}supportsite_http_server_image"
+    links: "{{ docker_name_prefix }}SupportSite_database_server:support_site_mysql_server"
+    name: "{{ docker_name_prefix }}SupportSite_http_server"
+    ports:
+    - "{{ supportsite_ip }}:80:80"
+    - "{{ supportsite_ip }}:443:443"
+    state: "{{ container_start_state_nondata }}"
+    restart_policy: always
+    volumes: /opt/user_directory_volume:/opt/user_directory:rw
+    volumes_from:
+      - "{{ docker_name_prefix }}SupportSite_http_data_download"
+      - "{{ docker_name_prefix }}SupportSite_http_data_ncdrelease"
+      - "{{ docker_name_prefix }}SupportSite_http_data_ncdzip"
+      - "{{ docker_name_prefix }}SupportSite_http_data_supportsystem"

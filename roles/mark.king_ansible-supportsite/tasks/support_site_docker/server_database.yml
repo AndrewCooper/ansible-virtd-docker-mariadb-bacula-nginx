@@ -1,0 +1,32 @@
+---
+#=========================================================
+# Database Server Container
+#---------------------------------------------------------
+- name: Setting db root user password, for the ss docker container
+  replace:
+    dest: "{{ repo_destination }}/{{ supportsite_docker_repos.SupportSite_database_server.dir_name }}/Dockerfile"
+    regexp: '(ENV\s+MYSQL_ROOT_PASSWORD\s+).*'
+    replace: '\1 {{ supportsite_mysql_password }}'
+
+- name: Setting db name, for the ss docker container
+  replace:
+    dest: "{{ repo_destination }}/{{ supportsite_docker_repos.SupportSite_database_server.dir_name }}/Dockerfile"
+    regexp: '(ENV\s+MYSQL_DATABASE\s+).*'
+    replace: '\1 {{ buildsystem_supportsite_database_name }}'
+
+- name: Build docker image ----- Support Site database server
+  docker_image:
+    name: "{{ docker_name_prefix }}supportsite_database_server_image"
+    path: "{{ repo_destination }}/{{ supportsite_docker_repos.SupportSite_database_server.dir_name }}"
+    state: "{{ image_build_state_nondata }}"
+
+- name: Start docker container - Support Site database server
+  docker:
+    detach: True
+    image: "{{ docker_name_prefix }}supportsite_database_server_image"
+    name: "{{ docker_name_prefix }}SupportSite_database_server"
+    ports: 127.0.0.1:3306:3306
+    state: "{{ container_start_state_nondata }}"
+    restart_policy: always
+    volumes_from:
+      - "{{ docker_name_prefix }}SupportSite_database_data"

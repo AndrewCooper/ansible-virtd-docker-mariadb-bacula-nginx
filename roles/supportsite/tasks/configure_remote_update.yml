@@ -1,0 +1,23 @@
+- name: Set User for remote db updates
+  replace:
+    dest: "{{ supportsite_manage_py_path }}support/remote_db.py"
+    regexp: "(.*'user':) .*"
+    replace: '\1 "{{ buildsystem_mysql_update_user }}",'
+
+- name: Set Password for remote db updates
+  replace:
+    dest: "{{ supportsite_manage_py_path }}support/remote_db.py"
+    regexp: "(.*'passwd':) .*"
+    replace: '\1 "{{ buildsystem_mysql_update_user_password }}",'
+
+- name: Set URL for remote db updates
+  replace:
+    dest: "{{ supportsite_manage_py_path }}support/remote_db.py"
+    regexp: "(.*'host':) .*"
+    replace: '\1 "{{ ss_url_to_build_system }}",'
+
+- name: Set TCP Port for remote db updates
+  replace:
+    dest: "{{ supportsite_manage_py_path }}support/remote_db.py"
+    regexp: "(.*'port':) .*"
+    replace: '\1 {{ ss_replication_port_to_bs }},'

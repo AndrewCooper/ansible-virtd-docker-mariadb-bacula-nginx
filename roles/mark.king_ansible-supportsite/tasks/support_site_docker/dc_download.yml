@@ -1,0 +1,16 @@
+---
+#=========================================================
+# Web Site Download Data Container
+#---------------------------------------------------------
+- name: Build docker image ----- Support Site download data
+  docker_image: 
+    name: "{{ docker_name_prefix }}supportsite_http_data_download_image"
+    path: "{{ repo_destination }}/{{ supportsite_docker_repos.SupportSite_http_data_download.dir_name }}"
+    state: "{{ image_build_state_data }}"
+
+- name: Start docker container - Support Site download data
+  docker: 
+    detach: True
+    image: "{{ docker_name_prefix }}supportsite_http_data_download_image"
+    name: "{{ docker_name_prefix }}SupportSite_http_data_download"
+    state: "{{ container_start_state_data }}"

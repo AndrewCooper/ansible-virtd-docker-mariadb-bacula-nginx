@@ -25,33 +25,34 @@
     database_password: "{{ buildsystem_database_root_password }}"
     server_directory: "{{ buildsystem_directory }}"
 
+- import_tasks: import_ssl_certs.yml
 
 - import_tasks: create_db_user.yml
   vars:
     db_host:                 "{{ build_ip_addr }}"
     db_admin_user:           "root"
     db_admin_user_password:  "{{ buildsystem_database_root_password }}"
-    db_new_user:             "build"
+    db_new_user:             "{{ buildsystem_mysql_readonly_user }}"
     db_new_user_password:    "{{ buildsystem_database_build_password }}"
-    db_new_user_permissions: ["SELECT ON *.*"]
-    db_grant_cmd_end:        ";"
+    db_new_user_permissions: "{{ buildsystem_mysql_readonly_user_permissions }}"
+    db_grant_cmd_end:        "{{ buildsystem_mysql_readonly_user_cmd_tail }}"
 
 - import_tasks: create_db_user.yml
   vars:
     db_host:                 "{{ build_ip_addr }}"
     db_admin_user:           "root"
     db_admin_user_password:  "{{ buildsystem_database_root_password }}"
-    db_new_user:             "remote_update"
+    db_new_user:             "{{ buildsystem_mysql_update_user }}"
     db_new_user_password:    "{{ buildsystem_database_remote_update_password }}"
-    db_new_user_permissions: ["SELECT ON *.*"]
-    db_grant_cmd_end:        ";"
+    db_new_user_permissions: "{{ buildsystem_mysql_update_user_permissions }}"
+    db_grant_cmd_end:        "{{ buildsystem_mysql_update_user_cmd_tail }}"
 
 - import_tasks: create_db_user.yml
   vars:
     db_host:                 "{{ build_ip_addr }}"
     db_admin_user:           "root"
     db_admin_user_password:  "{{ buildsystem_database_root_password }}"
-    db_new_user:             "replication"
+    db_new_user:             "{{ buildsystem_mysql_replication_user }}"
     db_new_user_password:    "{{ buildsystem_database_replication_password }}"
-    db_new_user_permissions: ["SELECT ON *.*"]
-    db_grant_cmd_end:        ";"
+    db_new_user_permissions: "{{ buildsystem_mysql_replication_user_permissions }}"
+    db_grant_cmd_end:        "{{ buildsystem_mysql_replication_user_cmd_tail }};"

@@ -1,0 +1,256 @@
+---
+# Available Tags:
+#   prompts
+#   svn_checkout
+#   dump_live_system
+#   git_docker_checkout
+#   docker_build_image
+#   import_sql
+
+- name: Build Docker Build System Containers for development testing
+  hosts: localhost
+  sudo: True
+
+  vars:
+    svn_username:               '{{ lookup("file",     playbook_dir + "/personal_credentials/svn/username") }}'
+    svn_password:               '{{ lookup("file",     playbook_dir + "/personal_credentials/svn/password") }}'
+    buildsystem_mysql_password: '{{ lookup("file",     playbook_dir + "/credentials/buildsystem.novatech-llc.com/database/root") }}'
+
+    container_data_directory: "~/Workbench/Dev_Build_Support_Data"
+    external_port_www: 80
+    extermal_port_www_django: 8000
+    external_port_tftp: 69
+    external_port_mysql: 3306
+    test_db_password: testing_password
+    buildsystem_database_name: protocol
+    docker_name_prefix: "dev_"
+
+    build_system_docker_repos:
+      TestStation_database_server:
+        dir_name: docker-TestStation_database_server
+        url: https://git.novatech-llc.com/NovaTech-Testing/docker-TestStation_database_server.git
+      TestStation_http_server:
+        dir_name: docker-TestStation_http_server
+        url: https://git.novatech-llc.com/NovaTech-Testing/docker-TestStation_http_server.git
+      TestStation_tftp_server:
+        dir_name: docker-TestStation_tftp_server
+        url: https://git.novatech-llc.com/NovaTech-Testing/docker-TestStation_tftp_server.git
+
+
+  tasks:
+  - pause:
+      prompt: "To run this playbook a ssh key to the buildsystem.novatech-llc.com ssh container with no pass is needed (unless the 'dump_live_system' tags are skipped).\n\n(Hit 'Enter' to continue)"
+    tags:
+      - prompts
+  - pause:
+      prompt: "To run this playbook the following need to be installed: \n\tdocker\n\tpython-docker\n\tmysql (export/import data)\n\trsync (dump live)\n\tpysvn (svn checkout)\n\n(Hit 'Enter' to continue)"
+    tags:
+      - prompts
+  - pause:
+      prompt: "The following service(s) need to be running: \n\tdocker\n\n(Hit 'Enter' to continue)"
+    tags:
+      - prompts
+
+  - assert:
+      that:
+        - "svn_username != ''"
+        - "svn_password != ''"
+    tags:
+      - svn_checkout
+  - assert:
+      that:
+        - "buildsystem_mysql_password != ''"
+    tags:
+      - dump_live_system
+
+  #------------------------------------------------------------------------------------------------------------------
+  # Setup of base directories.
+  - name: Make directory to contain data for containers
+    file:
+      mode: 0777
+      path: "{{ container_data_directory | expanduser }}"
+      state: directory
+  - name: Make a build system folder
+    file:
+      mode: 0777
+      path: "{{ container_data_directory | expanduser }}/BuildSystem"
+      state: directory
+
+  #------------------------------------------------------------------------------------------------------------------
+  # Setup iso folder.
+  - name: Make a bs iso folder
+    file:
+      mode: 0777
+      path: "{{ container_data_directory | expanduser }}/BuildSystem/iso_temp_files"
+      state: directory
+
+  #------------------------------------------------------------------------------------------------------------------
+  # Setup ncd release folder
+  - name: Make a bs ncd release folder
+    file:
+      mode: 0777
+      path: "{{ container_data_directory | expanduser }}/BuildSystem/ncd_release"
+      state: directory
+  - name: Gathering NCD Release files
+    ncdrelease:
+      svn_username: "{{ svn_username }}"
+      svn_password: "{{ svn_password }}"
+      ncd_release_repo: "https://svn.novatech-llc.com/NCD_Release"
+      local_checkout_dir: "{{ container_data_directory | expanduser }}/BuildSystem/ncd_release/"
+      releases_status_logfile: "{{ container_data_directory | expanduser }}/BuildSystem/ncd_repo_status"
+    tags:
+      - svn_checkout
+
+  #------------------------------------------------------------------------------------------------------------------
+  # Setup test client folder
+  - name: Make a bs test client folder
+    file:
+      mode: 0777
+      path: "{{ container_data_directory | expanduser }}/BuildSystem/test_client_files"
+      state: directory
+  - name:  Syncronizing test client files to local system
+    sudo: false
+    command: "rsync -vahdO buildsystem.novatech-llc.com:/opt/test_client_files/* {{ container_data_directory | expanduser }}/BuildSystem/test_client_files/"
+#    command: "scp buildsystem.novatech-llc.com:/opt/test_client_files/* {{ container_data_directory | expanduser }}/BuildSystem/test_client_files/"
+    tags:
+      - dump_live_system
+
+  #------------------------------------------------------------------------------------------------------------------
+  # Setup tftp folder
+  - name: Make a bs tftp folder
+    file:
+      mode: 0777
+      path: "{{ container_data_directory | expanduser }}/BuildSystem/tftp_files"
+      state: directory
+  - name:  Syncronizing tftp files to local system
+    sudo: false
+    command: "rsync -vahdO buildsystem.novatech-llc.com:/opt/tftp_files/* {{ container_data_directory | expanduser }}/BuildSystem/tftp_files/"
+#    command: "scp buildsystem.novatech-llc.com:/opt/tftp_files/* {{ container_data_directory | expanduser }}/BuildSystem/tftp_files"
+    tags:
+      - dump_live_system
+
+  #------------------------------------------------------------------------------------------------------------------
+  # Get docker files from git
+  - name: Remove any old repo files
+    sudo: false
+    file:
+      mode: 0777
+      path: "{{ container_data_directory | expanduser }}/{{ item.value.dir_name }}"
+      state: absent
+
+    with_dict: "{{ build_system_docker_repos }}"
+    tags:
+      - git_docker_checkout
+  - name: Clone Git repos
+    sudo: false
+    git:
+      repo: "{{ item.value.url }}"
+      dest: "{{ container_data_directory | expanduser }}/{{ item.value.dir_name }}"
+      force: yes
+    with_dict: "{{ build_system_docker_repos }}"
+    tags:
+      - git_docker_checkout
+
+  #------------------------------------------------------------------------------------------------------------------
+  # Setup the buildsystem database server
+  - name: Make a bs database folder
+    file:
+      mode: 0777
+      path: "{{ container_data_directory | expanduser }}/BuildSystem/mysql"
+      state: directory
+  - name: Setting db root user password, for the bs docker container
+    replace:
+      dest: "{{ container_data_directory | expanduser }}/{{ build_system_docker_repos.TestStation_database_server.dir_name }}/Dockerfile"
+      regexp: '(ENV\s+MYSQL_ROOT_PASSWORD\s+).*'
+      replace: '\1 {{ test_db_password }}'
+  - name: Setting db name, for the bs docker container
+    replace:
+      dest: "{{ container_data_directory | expanduser }}/{{ build_system_docker_repos.TestStation_database_server.dir_name }}/Dockerfile"
+      regexp: '(ENV\s+MYSQL_DATABASE\s+).*'
+      replace: '\1 {{ buildsystem_database_name }}'
+  - name: Build docker image ----- Test Station database server
+    docker_image:
+      name: "{{ docker_name_prefix }}teststation_database_server_image"
+      path: "{{ container_data_directory | expanduser }}/{{ build_system_docker_repos.TestStation_database_server.dir_name }}"
+      state: "build"
+    tags:
+      - docker_build_image
+  - name: Start docker container - Test Station database server
+    docker:
+      detach: True
+      image: "{{ docker_name_prefix }}teststation_database_server_image"
+      name: "{{ docker_name_prefix }}TestStation_database_server"
+      ports: "{{ external_port_mysql }}:3306"
+      state: "restarted"
+      restart_policy: "no"
+      volumes:
+      - "{{ container_data_directory | expanduser }}/BuildSystem/mysql:/var/lib/mysql:rw"
+
+  #------------------------------------------------------------------------------------------------------------------
+  # Setup the buildsystem tftp server
+  - name: Build docker image ----- Test Station tftp server
+    docker_image:
+      name: "{{ docker_name_prefix }}teststation_tftp_image"
+      path: "{{ container_data_directory | expanduser }}/{{ build_system_docker_repos.TestStation_tftp_server.dir_name }}"
+      state: "build"
+    tags:
+      - docker_build_image
+  - name: Start docker container - Test Station tftp server
+    docker:
+      detach: True
+      image: "{{ docker_name_prefix }}teststation_tftp_image"
+      name: "{{ docker_name_prefix }}TestStation_tftp_server"
+      ports: "{{ external_port_tftp }}:69/udp"
+      state: "restarted"
+      restart_policy: "no"
+      volumes:
+      - "{{ container_data_directory | expanduser }}/BuildSystem/tftp_files:/opt/tftp_files:rw"
+
+  #------------------------------------------------------------------------------------------------------------------
+  # Setup the buildsystem http server
+  - name: Make a bs web code folder
+    file:
+      mode: 0777
+      path: "{{ container_data_directory | expanduser }}/BuildSystem/django"
+      state: directory
+  - name: Build docker image ----- Test Station http server
+    docker_image:
+      name: "{{ docker_name_prefix }}teststation_http_image"
+      path: "{{ container_data_directory | expanduser }}/{{ build_system_docker_repos.TestStation_http_server.dir_name }}"
+      state: "build"
+    tags:
+      - docker_build_image
+  - name: Start docker container - Test Station http server
+    docker:
+      detach: True
+      image: "{{ docker_name_prefix }}teststation_http_image"
+      links: "{{ docker_name_prefix }}TestStation_database_server:test_station_mysql_server"
+      name: "{{ docker_name_prefix }}TestStation_http_server"
+      ports:
+      - "{{ external_port_www }}:80"
+      - "{{ extermal_port_www_django }}:8000"
+      state: "restarted"
+      restart_policy: "no"
+      volumes:
+        - "{{ container_data_directory | expanduser }}/BuildSystem/django:/opt/protocol:rw"
+        - "{{ container_data_directory | expanduser }}/BuildSystem/iso_temp_files:/opt/iso_temp_files:rw"
+        - "{{ container_data_directory | expanduser }}/BuildSystem/ncd_release:/opt/ncd_release:rw"
+        - "{{ container_data_directory | expanduser }}/BuildSystem/test_client_files:/opt/test_client_files:rw"
+        - "{{ container_data_directory | expanduser }}/BuildSystem/tftp_files:/opt/tftp_files:rw"
+
+  #------------------------------------------------------------------------------------------------------------------
+  # Setup buildsystem database
+  - name: Dump mysql data from buildsystem
+    command: "mysqldump --host=buildsystem.novatech-llc.com --user=root --password={{ buildsystem_mysql_password }} --all-databases --events --triggers --result-file={{ container_data_directory | expanduser }}/BuildSystem/mysql_dump.sql"
+    tags:
+      - dump_live_system
+  - name: Load dump file into test buildsystem
+    shell: mysql --host=0.0.0.0 --user=root --port={{ external_port_mysql }} --password={{ test_db_password }} < {{ container_data_directory | expanduser }}/BuildSystem/mysql_dump.sql
+    tags:
+      - import_sql
+  - name: Update root user password after import
+    shell: mysql --host=0.0.0.0 --user=root --port={{ external_port_mysql }} --password={{ test_db_password }} -e'SET PASSWORD FOR root = PASSWORD("{{ test_db_password }}");'
+    tags:
+      - import_sql
+  - name: Restart mysql server after import
+    shell: docker restart {{ docker_name_prefix }}TestStation_database_server

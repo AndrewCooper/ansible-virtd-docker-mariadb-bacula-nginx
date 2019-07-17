@@ -1,0 +1,6 @@
+---
+supportsite_path: '/opt/supportsite/'
+supportsite_mysql_data_dir: '/var/lib/mysql'
+
+ss_url_to_build_system:                      'mail.novatech-llc.com'
+ss_replication_port_to_bs:                   '37101'

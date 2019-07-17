@@ -1,0 +1,16 @@
+---
+#=========================================================
+# Database Data Container
+#---------------------------------------------------------
+- name: Build docker image ----- Support Site database data
+  docker_image: 
+    name: "{{ docker_name_prefix }}supportsite_database_data_image"
+    path: "{{ repo_destination }}/{{ supportsite_docker_repos.SupportSite_database_data.dir_name }}/"
+    state: "{{ image_build_state_data }}"
+
+- name: Start docker container - Support Site database data
+  docker: 
+    detach: True
+    image: "{{ docker_name_prefix }}supportsite_database_data_image"
+    name: "{{ docker_name_prefix }}SupportSite_database_data"
+    state: "{{ container_start_state_data }}"

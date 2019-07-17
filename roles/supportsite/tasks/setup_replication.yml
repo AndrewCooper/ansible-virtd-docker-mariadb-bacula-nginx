@@ -1,0 +1,71 @@
+- name: Create tempfile for buildsystem dump
+  tempfile:
+    state: file
+  register: master_tables_dump
+
+- name: Dump buildsystem
+  shell: >
+    mysqldump
+    --master-data
+    --host='{{ ss_url_to_build_system }}' --port={{ ss_replication_port_to_bs }}
+    --user=root --password="{{ buildsystem_database_root_password }}"
+    --ssl-ca='{{ supportsite_mysql_data_dir }}/ssl/ca.pem'
+    --ssl-cert='{{ supportsite_mysql_data_dir }}/ssl/replication_user_client-cert.pem'
+    --ssl-key='{{ supportsite_mysql_data_dir }}/ssl/replication_user_client-key.pem'
+    protocol
+    releasenotes_component
+    lookup_group
+    records_orionrecord_orion_protocols
+    lookup_group_build_options
+    records_job
+    lookup_protocol
+    lookup_buildoption
+    Orion5RTable
+    records_orionrecord_groups
+    lookup_group_protocols
+    releasenotes_product
+    records_buildrecord
+    Orion16Table
+    records_customer
+    releasenotes_version
+    records_orionrecord
+    Orion5Table
+    > '{{ master_tables_dump.path }}'
+
+- name: Modify dumped master data
+  blockinfile:
+    path: '{{ master_tables_dump.path }}'
+    marker: '-- {mark} ANSIBLE MANAGED BLOCK'
+    insertbefore: "CHANGE MASTER TO MASTER_LOG_FILE.*"
+    block: |
+      STOP SLAVE;
+      CHANGE MASTER TO MASTER_HOST='{{ ss_url_to_build_system }}', MASTER_PORT={{ ss_replication_port_to_bs }};
+      CHANGE MASTER TO MASTER_USER='{{ buildsystem_mysql_replication_user }}', MASTER_PASSWORD='{{ buildsystem_database_replication_password }}';
+      CHANGE MASTER TO MASTER_HEARTBEAT_PERIOD = 50;
+      CHANGE MASTER TO MASTER_SSL=1;
+      CHANGE MASTER TO MASTER_SSL_CAPATH='{{ supportsite_mysql_data_dir }}/ssl/';
+      CHANGE MASTER TO MASTER_SSL_CA='{{ supportsite_mysql_data_dir }}/ssl/ca.pem';
+      CHANGE MASTER TO MASTER_SSL_CERT='{{ supportsite_mysql_data_dir }}/ssl/replication_user_client-cert.pem';
+      CHANGE MASTER TO MASTER_SSL_KEY='{{ supportsite_mysql_data_dir }}/ssl/replication_user_client-key.pem';
+
+- name: Modify dumped master data
+  blockinfile:
+    path: '{{ master_tables_dump.path }}'
+    marker: '-- {mark} ANSIBLE MANAGED BLOCK'
+    insertafter: EOF
+    block: |
+      START SLAVE;
+
+- name: Import dump data from master
+  mysql_db:
+    login_host: SupportSite_database_server
+    login_user: root
+    login_password: '{{ supportsite_database_root_password }}'
+    name: protocol
+    state: import
+    target: '{{ master_tables_dump.path }}'
+
+- name: Delete tempfile
+  file:
+    path: '{{ master_tables_dump.path }}'
+    state: absent

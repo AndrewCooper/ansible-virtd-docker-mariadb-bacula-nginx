@@ -1,0 +1,4 @@
+---
+- import_tasks: import_ssl_certs.yml
+- import_tasks: configure_remote_update.yml
+- import_tasks: setup_replication.yml

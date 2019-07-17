@@ -1,0 +1,134 @@
+---
+# Prerequisite: Ansible needs to be installed with 'yum install ansible'.
+# Prerequisite: Need to generate encrypted user password
+#   Can use 'mkpasswd --method=SHA-512' or
+#   'python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt(getpass.getpass())"'.
+#   For the python method may need to install passlib module by 'pip install passlib'.
+#
+# May also run 'yum list updates' to see what packages are outdated and then 'yum updated'.
+# For notes 'yum list installed' lists packages installed.
+
+- name: Initial support site setup from freash install
+  hosts: localhost
+  vars:
+    ss_root_attempts: 3
+    ss_ssh_port: 29322
+    ss_user: deploy
+    ss_user_password: "$6$rounds=100000$POCFLvGAEmNcxvz1$x7uwLSHt6sugdp4tZnrOvEN.Mbkaf1LnRhuggAAVO5JkoZ.HBHhlBjCsJgo.pH6askHyl4/MDl5irY2JzEmR90"
+    ss_allow_line: ["sshd: .novatech-llc.com", "sshd: 216.21.169.52   #DHCP Address from Google Fiber", "sshd: 23.228.188.200/255.255.255.248  #Static Address from Google Fiber"]
+  tasks:
+  - name: Set timezone to Chicago
+    shell: timedatectl set-timezone America/Chicago
+
+  - name: Check that docker is installed
+    yum:
+      name: docker
+      state: present
+
+  - name: Check that nc (ncat/netcat) is installed
+    yum:
+      name: nmap-ncat
+      state: present
+
+  - name: Check that pip is installed
+    yum:
+      name: python-pip
+      state: present
+
+  - name: Make sure docker-py is installed
+    yum:
+      name: docker-python
+      state: present
+
+  - name: Make sure docker service is started
+    service:
+      name: docker
+      state: started
+      enabled: yes
+
+  - name: Add user
+    user:
+      name: "{{ ss_user }}"
+      password: "{{ ss_user_password }}"
+      generate_ssh_key: yes
+      ssh_key_bits: 8192
+      state: present
+
+  - name: Creating a new authorized_keys for deploy
+    shell: cp /home/{{ ss_user }}/.ssh/id_rsa.pub /home/{{ ss_user }}/.ssh/authorized_keys
+
+  - name: Change owner of authorized_keys
+    shell: chown {{ ss_user }}:{{ ss_user }} /home/{{ ss_user }}/.ssh/authorized_keys
+
+  - name: Always allowing connection
+    lineinfile:
+      dest: /etc/hosts.allow
+      state: present
+      line: "{{ item }}"
+    with_items: ss_allow_line
+
+  - name: Always deny connection
+    lineinfile:
+      dest: /etc/hosts.deny
+      state: present
+      line: "sshd: ALL"
+
+  - name: Installing denyhost
+    yum:
+      name: denyhosts
+      state: present
+
+  - name: Changing denyhosts root threshold
+    replace:
+      dest: /etc/denyhosts.conf
+      regexp: '^DENY_THRESHOLD_ROOT\s*=\s*\d+'
+      replace: 'DENY_THRESHOLD_ROOT = {{ ss_root_attempts }}'
+
+  - name: Changing denyhosts email settings
+    replace:
+      dest: /etc/denyhosts.conf
+      regexp: '^(\s*ADMIN_EMAIL\s*=).+'
+      replace: '\1'
+
+  - name: Enabling and starting denyhosts
+    service:
+      name: denyhosts
+      state: started
+      enabled: yes
+
+  - name: Setting the ssh server to not allow password login
+    replace:
+      dest: /etc/ssh/sshd_config
+      regexp: '^PasswordAuthentication yes'
+      replace: 'PasswordAuthentication no'
+
+  - name: Setting the ssh port
+    replace:
+      dest: /etc/ssh/sshd_config
+      regexp: '^#?(Port)\s+22'
+      replace: '\1 {{ ss_ssh_port }}'
+
+  - name: Change SELINUX for ssh port
+    command: semanage port --add --type ssh_port_t --proto tcp {{ ss_ssh_port }}
+    ignore_errors: yes
+
+  - name: Change firewall permanent config for ssh port
+    command: firewall-cmd --permanent --add-port={{ ss_ssh_port }}/tcp
+
+  - name: Change firewall running config for ssh port
+    command: firewall-cmd --add-port={{ ss_ssh_port }}/tcp
+
+  - name: Change firewall permanent config by removing old ssh port
+    command: firewall-cmd --permanent --remove-service=ssh
+
+  - name: Change firewall running config by removing old ssh port
+    command: firewall-cmd --remove-service=ssh
+
+  - name: Reloading firewall after ssh port change
+    command: firewall-cmd --reload
+
+  - name: Restart the ssh service
+    service:
+      name: sshd.service
+      enabled: yes
+      state: restarted

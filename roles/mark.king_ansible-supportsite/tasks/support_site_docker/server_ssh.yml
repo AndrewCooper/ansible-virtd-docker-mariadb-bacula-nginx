@@ -1,0 +1,31 @@
+---
+#=========================================================
+# SSH Server Container
+#---------------------------------------------------------
+- name: Setting root user password, for the bs prod ssh docker container
+  replace:
+    dest: "{{ repo_destination }}/{{ supportsite_docker_repos.SupportSite_ssh_server.dir_name }}/Dockerfile"
+    regexp: "root_user_password"
+    replace: '{{ supportsite_ssh_root_user_password }}'
+
+- name: Build docker image ----- Support Site ssh server
+  docker_image:
+    name: "{{ docker_name_prefix }}supportsite_ssh_server_image"
+    path: "{{ repo_destination }}/{{ supportsite_docker_repos.SupportSite_ssh_server.dir_name }}"
+    state: "{{ image_build_state_nondata }}"
+
+- name: Start docker container - Support Site ssh server
+  docker:
+    detach: True
+    image: "{{ docker_name_prefix }}supportsite_ssh_server_image"
+    links: "{{ docker_name_prefix }}SupportSite_database_server:support_site_mysql_server"
+    name: "{{ docker_name_prefix }}SupportSite_ssh_server"
+    ports: 127.0.0.1:22:22
+    restart_policy: always
+    state: "{{ container_start_state_nondata }}"
+    volumes_from:
+      - "{{ docker_name_prefix }}SupportSite_database_data"
+      - "{{ docker_name_prefix }}SupportSite_http_data_download"
+      - "{{ docker_name_prefix }}SupportSite_http_data_ncdrelease"
+      - "{{ docker_name_prefix }}SupportSite_http_data_ncdzip"
+      - "{{ docker_name_prefix }}SupportSite_http_data_supportsystem"

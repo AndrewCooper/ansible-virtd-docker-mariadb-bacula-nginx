@@ -1,0 +1,18 @@
+---
+buildsystem_mysql_docker_name:               'test_station_mysql_server'
+
+ss_url_to_build_system:                      'mail.novatech-llc.com'
+ss_replication_port_to_bs:                   '37101'
+buildsystem_mysql_replication_user:          'replication'
+buildsystem_mysql_replication_user_permissions:
+  - "REPLICATION SLAVE ON *.*"
+buildsystem_mysql_replication_user_cmd_tail: ' REQUIRE SSL;'
+buildsystem_mysql_update_user:               'remote_update'
+buildsystem_mysql_update_user_permissions:
+  - "SELECT ON protocol.Orion5Table"
+  - "UPDATE ON protocol.Orion5Table"
+  - "SELECT ON protocol.Orion5RTable"
+  - "UPDATE ON protocol.Orion5RTable"
+  - "SELECT ON protocol.records_orionrecord"
+  - "UPDATE ON protocol.records_orionrecord"
+buildsystem_mysql_update_user_cmd_tail:      ' REQUIRE SSL;'

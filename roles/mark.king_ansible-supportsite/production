@@ -1,0 +1,14 @@
+[buildsystem_server]
+daedalus.novatech-llc.com
+
+[buildsystem_docker_container]
+buildsystem.novatech-llc.com
+
+[supportsite_old]
+supportsite_current_production
+
+[supportsite_server]
+supportsite_server ansible_ssh_user=deploy
+
+[supportsite_docker_container]
+supportsite_docker_container ansible_ssh_user=root

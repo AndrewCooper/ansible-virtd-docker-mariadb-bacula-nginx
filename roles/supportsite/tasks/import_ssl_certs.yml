@@ -1,0 +1,41 @@
+- name: Makes sure the local dir for ss db ssl files to bs db exists
+  file:
+    mode: 0775
+    path: '{{ supportsite_mysql_data_dir }}/ssl/'
+    state: directory
+
+- name: Copy ca.pem to the support site db server
+  copy:
+    dest: '{{ supportsite_mysql_data_dir }}/ssl/ca.pem'
+    src: '{{ buildsystem_database_ssl_ca }}.pem'
+
+- name: Copy replication_user_client-cert.pem to the support site db server
+  copy:
+    dest: '{{ supportsite_mysql_data_dir }}/ssl/replication_user_client-cert.pem'
+    src: '{{ buildsystem_database_ssl_ss_client }}.pem'
+
+- name: Copy replication_user_client-key.pem to the support site db server
+  copy:
+    dest: '{{ supportsite_mysql_data_dir }}/ssl/replication_user_client-key.pem'
+    src: '{{ buildsystem_database_ssl_ss_client }}.key'
+
+- name: Makes sure the local dir for ss http ssl files to bs db exists
+  file:
+    mode: 0775
+    path: '{{ supportsite_path }}/ssl/'
+    state: directory
+
+- name: Copy  ca.pem to the support site http server
+  copy:
+    dest: '{{ supportsite_path }}/ssl/ca.pem'
+    src: '{{ buildsystem_database_ssl_ca }}.pem'
+
+- name: Copy for update_user_client-cert.pem to the support site http server
+  copy:
+    dest: '{{ supportsite_path }}/ssl/update_user_client-cert.pem'
+    src: '{{ buildsystem_database_ssl_ss_web }}.pem'
+
+- name: Copy for update_user_client-key.pem to the support site http server
+  copy:
+    dest: '{{ supportsite_path }}/ssl/update_user_client-key.pem'
+    src: '{{ buildsystem_database_ssl_ss_web }}.pem'

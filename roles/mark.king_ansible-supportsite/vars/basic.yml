@@ -1,0 +1,15 @@
+---
+#                                                                               #  ss  |      |      |
+#                                                                               # setup| conv | repl |
+#                                                                               #------|------|------|
+buildsystem_supportsite_database_name:       'protocol'                         #  x   |  x   |  x   |
+local_working_directory:                     '~/ansible_workspace/'             #  x   |  x   |  x   |
+supportsite_mysql_user:                      'root'                             #  x   |  x   |  x   |
+#                                                                               #------|------|------|
+docker_name_prefix:                          ''                                 #  x   |      |  x   |
+supportsite_ip:                              '23.253.56.181'                    #  x   |      |  x   |
+#                                                                               #------|------|------|
+buildsystem_mysql_user:                      'root'                             #      |  x   |  x   |
+buildsystem_mysql_docker_name:               'test_station_mysql_server'        #      |  x   |  x   |
+supportsite_mysql_docker_name:               'support_site_mysql_server'        #      |  x   |  x   |
+supportsite_manage_py_path:                  '/opt/supportsite/'                #  x   |  x   |      |

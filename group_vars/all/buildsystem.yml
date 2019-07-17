@@ -1,0 +1,24 @@
+---
+buildsystem_database_ssl_ca:         '{{                    playbook_dir + "/credentials/buildsystem/ssl/ca" }}'
+buildsystem_database_ssl_server:     '{{                    playbook_dir + "/credentials/buildsystem/ssl/server" }}'
+buildsystem_database_ssl_ss_client:  '{{                    playbook_dir + "/credentials/buildsystem/ssl/replication_user_client" }}'
+buildsystem_database_ssl_ss_web:     '{{                    playbook_dir + "/credentials/buildsystem/ssl/update_user_client" }}'
+
+buildsystem_mysql_data_dir: '/var/lib/mysql'
+
+buildsystem_mysql_readonly_user:             'build'
+buildsystem_mysql_readonly_user_permissions:
+  - "SELECT ON *.*"
+buildsystem_mysql_readonly_user_cmd_tail:    ';'
+
+buildsystem_mysql_replication_user:          'replication'
+buildsystem_mysql_replication_user_permissions:
+  - "REPLICATION CLIENT,REPLICATION SLAVE ON *.*"
+buildsystem_mysql_replication_user_cmd_tail: ' REQUIRE SSL;'
+
+buildsystem_mysql_update_user:               'remote_update'
+buildsystem_mysql_update_user_permissions:
+  - "SELECT,UPDATE ON protocol.Orion5Table"
+  - "SELECT,UPDATE ON protocol.Orion5RTable"
+  - "SELECT,UPDATE ON records_orionrecord"
+buildsystem_mysql_update_user_cmd_tail:      ' REQUIRE SSL;'

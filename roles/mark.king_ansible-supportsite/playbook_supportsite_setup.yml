@@ -1,0 +1,148 @@
+---
+- name: Local file preperation for the Support Site
+  hosts: localhost
+  vars_files:
+  - 'vars/basic.yml'
+  - 'vars/credentials.yml'
+  - 'vars/supportsite.yml'
+  sudo: false
+  tasks:
+  - name: Get file stats of the open ssl tar file
+    stat:
+      path: "{{ ssl_tar_file }}"
+      get_checksum: False
+      get_md5: False
+    register: ssl_tar_file_stat
+
+  - name: Asserting that the open ssl tar file exists
+    assert:
+      that:
+      - ssl_tar_file_stat.stat.exists == True
+
+  - name: Make directory for local checkout of support site docker files
+    file:
+      mode: 0775
+      path: "{{ local_working_directory | expanduser }}ss_docker"
+      state: directory
+
+  - name: Clone git support site docker repos
+    git:
+      repo: "{{ item.value.url }}"
+      dest: "{{ local_working_directory | expanduser }}ss_docker/{{ item.value.dir_name }}"
+      force: yes
+    with_dict: "{{ supportsite_docker_repos }}"
+
+  - name: Copy open ssl tar file into the support site docker http server files
+    command: cp {{ ssl_tar_file }} {{ local_working_directory | expanduser }}ss_docker/{{ supportsite_docker_repos['SupportSite_http_server'].dir_name }}
+  ####################################################################
+  - name: Make directory for local to get the needed support site code
+    file:
+      mode: 0775
+      path: "{{ local_working_directory | expanduser }}ss_web_code"
+      state: directory
+  - name: Checkout support site code
+    git:
+      repo: "{{ support_site_repo }}"
+      dest: "{{ local_working_directory | expanduser }}ss_web_code/support_site_git"
+      force: yes
+  - name: Checkout build system code
+    git:
+      repo: "{{ build_system_repo }}"
+      dest: "{{ local_working_directory | expanduser }}ss_web_code/build_system_git"
+      force: yes
+  - name: Moving needed build system code into support site code
+    command: cp -fR {{ local_working_directory | expanduser }}ss_web_code/build_system_git/{{ item }} {{ local_working_directory | expanduser }}ss_web_code/support_site_git
+    with_items: "{{ buildsystem_code_for_supportsite }}"
+
+  - name: Set datebase name in website code
+    sudo: false
+    local_action: replace
+      dest="{{ local_working_directory | expanduser }}ss_web_code/support_site_git/settings.py"
+      regexp="(.*'NAME':\s*').*('.*)"
+      replace='\1{{ buildsystem_supportsite_database_name }}\2'
+
+  - name: Set database password in website code
+    sudo: false
+    local_action: replace
+      dest="{{ local_working_directory | expanduser }}ss_web_code/support_site_git/settings.py"
+      regexp="(.*'PASSWORD':\s*)'.*'(.*)"
+      replace='\1"{{ supportsite_mysql_password }}"\2'
+  ####################################################################
+  - name: Getting current ncd releases
+    ncdrelease:
+      svn_username: "{{ svn_username }}"
+      svn_password: "{{ svn_password }}"
+      ncd_release_repo: "{{ ncd_repo }}"
+      local_checkout_dir: "{{ local_working_directory | expanduser }}ncd_release/"
+      releases_status_logfile: "{{ local_working_directory | expanduser }}/ncd_repo_status"
+
+- name: Setup docker containers
+  hosts: supportsite_server
+  vars_files:
+  - 'vars/basic.yml'
+  - 'vars/credentials.yml'
+  - 'vars/supportsite.yml'
+  sudo: true
+  tasks:
+
+  - name: Make directory for docker files on server
+    file:
+      mode: 0777
+      path: "{{ repo_destination }}"
+      state: directory
+
+  - name: Sychronizing docker files to the support site server
+    sudo: false
+    synchronize:
+      src: "{{ local_working_directory | expanduser }}ss_docker/"
+      dest: "{{ repo_destination }}/"
+      set_remote_user: no
+      checksum: yes
+      group: no
+      links: yes
+      mode: yes
+      owner: no
+      perms: no
+      recursive: yes
+      times: no
+
+
+  - include: tasks/support_site_docker/dc_database.yml
+  - include: tasks/support_site_docker/dc_download.yml
+  - include: tasks/support_site_docker/dc_ncdrelease.yml
+  - include: tasks/support_site_docker/dc_ncdzip.yml
+  - include: tasks/support_site_docker/dc_supportsite.yml
+  - include: tasks/support_site_docker/server_database.yml
+  - include: tasks/support_site_docker/server_http.yml
+  - include: tasks/support_site_docker/server_ssh.yml
+  - include: tasks/support_site_docker/service_cron.yml
+
+- name: Setup Support Site
+  hosts: supportsite_docker_container
+  sudo: false
+  vars_files:
+  - 'vars/basic.yml'
+  - 'vars/supportsite.yml'
+  tasks:
+  - name: Sychronizing support site web code to server
+    synchronize:
+      src: "{{ local_working_directory | expanduser }}ss_web_code/support_site_git/"
+      dest: "{{ supportsite_manage_py_path }}"
+      set_remote_user: no
+      owner: no
+
+  - name: Sychronizing NCD releases to server
+    synchronize:
+      src: "{{ local_working_directory | expanduser }}ncd_release/"
+      dest: "/opt/ncd_release/"
+      set_remote_user: no
+      owner: no
+
+- name: Restart web container
+  hosts: supportsite_server
+  vars_files:
+  - 'vars/basic.yml'
+  sudo: true
+  tasks:
+  - name: Restart support site http server
+    command: docker restart {{ docker_name_prefix }}SupportSite_http_server

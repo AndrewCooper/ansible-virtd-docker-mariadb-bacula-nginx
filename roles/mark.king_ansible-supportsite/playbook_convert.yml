@@ -1,0 +1,280 @@
+---
+- name: Get old data from build system
+  hosts: localhost
+  vars_files:
+  - 'vars/basic.yml'
+  - 'vars/credentials.yml'
+  - 'vars/convert.yml'
+  tasks:
+  - name: Dumping sql data from old build system
+    command:
+      mysqldump
+      --host={{ old_buildsystem_ip }}
+      --user={{ old_buildsystem_mysql_user }}
+      --password={{ old_buildsystem_mysql_password }}
+      {{ buildsystem_supportsite_database_name }}
+      --result-file={{ local_working_directory | expanduser }}buildsystem_mysql_protocol_dump.sql
+      --single-transaction
+
+  - name: Adding newlines after value to sql file for easy reading
+    shell: sed 's$VALUES ($VALUES\n($g' {{ local_working_directory | expanduser }}buildsystem_mysql_protocol_dump.sql | sed 's$),($),\n($g' > {{ local_working_directory | expanduser }}buildsystem_mysql_protocol_dump_newline.sql
+
+  - name: Removing invalid data from db entries
+    shell: sed s/\.dll_.../.dll/g {{ local_working_directory | expanduser }}buildsystem_mysql_protocol_dump_newline.sql > {{ local_working_directory | expanduser }}buildsystem_mysql_protocol_dump_newline_clean.sql
+
+  - name: Makes sure the local tftp dir exists
+    file:
+      mode: 0775
+      path: "{{ local_working_directory | expanduser }}build_system_tftp"
+      state: directory
+
+  - name: Make sure local tftp dir is clean
+    command: rm -fr "{{ local_working_directory | expanduser }}build_system_tftp/"
+
+  - name: Copy tftp data from old build system to local system
+    command: scp -r linuxserver:/srv/tftp "{{ local_working_directory | expanduser }}build_system_tftp"
+
+
+  - name: Makes sure the local testclient dir exists
+    file:
+      mode: 0775
+      path: "{{ local_working_directory | expanduser }}build_system_testclient"
+      state: directory
+
+  - name: Make sure local testclient dir is clean
+    command: rm -fr "{{ local_working_directory | expanduser }}build_system_testclient/"
+
+  - name: Copy testclient data from old build system to local system
+    command: scp -r linuxserver:/home/django/orion/protocol/download "{{ local_working_directory | expanduser }}build_system_testclient"
+
+
+- name: Get old data from support site
+  hosts: supportsite_old
+  vars_files:
+  - 'vars/basic.yml'
+  - 'vars/credentials.yml'
+  - 'vars/convert.yml'
+  tasks:
+  # TODO: Export data from current support site (ss) db
+  - name: Dumping sql data from old build system
+    command:
+      mysqldump
+      --user="{{ old_supportsite_mysql_user }}"
+      --password="{{ old_supportsite_mysql_password }}"
+      "{{ buildsystem_supportsite_database_name }}"
+      --result-file=/tmp/supportsite_mysql_protocol_dump.sql
+      --single-transaction
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.Orion16Table"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.Orion5RTable"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.Orion5Table"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.lookup_buildoption"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.lookup_group"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.lookup_group_build_options"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.lookup_group_protocols"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.lookup_protocol"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.records_buildrecord"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.records_customer"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.records_job"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.records_orionrecord"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.records_orionrecord_groups"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.records_orionrecord_orion_protocols"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.releasenotes_component"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.releasenotes_product"
+#      --ignore-table="{{ buildsystem_supportsite_database_name }}.releasenotes_version"
+
+  - name: Adding newlines after value to sql file for easy reading
+    shell: sed 's$VALUES ($VALUES\n($g' /tmp/supportsite_mysql_protocol_dump.sql | sed 's$),($),\n($g' > /tmp/supportsite_mysql_protocol_dump_newline.sql
+
+  - name: Removing invalid data from db entries
+    shell: sed s/\.dll_.../.dll/g /tmp/supportsite_mysql_protocol_dump_newline.sql > /tmp/supportsite_mysql_protocol_dump_newline_clean.sql
+
+  - name: Copying sql file from server to localhost
+    fetch:
+      src: /tmp/supportsite_mysql_protocol_dump_newline_clean.sql
+      flat: yes
+      dest: "{{ local_working_directory | expanduser }}supportsite_mysql_protocol_dump_newline_clean.sql"
+
+  - name: TGZing up the support site static directory
+    command: tar -czv -f supportsite_static.tgz --directory=/home/deploy/static/ .
+
+  - name: Downloading support site static data to localhost
+    fetch:
+      src: /home/deploy/supportsite_static.tgz
+      flat: yes
+      dest: "{{ local_working_directory | expanduser }}supportsite_static.tgz"
+
+
+- name: Setup new buildsystem site
+  hosts: buildsystem_docker_container
+  vars_files:
+  - 'vars/basic.yml'
+  - 'vars/credentials.yml'
+  - 'vars/convert.yml'
+  tasks:
+  #- debug: var=hostvars[inventory_hostname].db_address
+  - name: Importing SQL file
+    sudo: false
+    local_action:
+      module: mysql_db
+      login_host: "{{ buildsystem_ip }}"
+      login_user: "{{ buildsystem_mysql_user }}"
+      login_password: "{{ buildsystem_mysql_password }}"
+      name: "{{ buildsystem_supportsite_database_name }}"
+      state: import
+      target: "{{ local_working_directory | expanduser }}buildsystem_mysql_protocol_dump_newline_clean.sql"
+
+  #- pause: prompt="Check db counts - old schema"
+  - name: Dumping tables via django
+    shell: python {{ buildsystem_manage_py_path }}manage.py dumpdata {{ item }} --indent 1 > /root/{{ item }}_dump.json
+    with_items:
+    - lookup
+    - records
+    - test.teststation
+    - test.instruction
+    - test.result
+    - test.testrecord
+    - test.inputtestrecord
+    - test.porttestrecord
+    - test.singletest
+    - test.cleanuprecord
+    - test.singleinputtest
+    - test.packagesinstalled
+    - orion_comments
+    - ssdata
+    - releasenotes
+    - legacy
+    - hardware_options
+    - auth
+
+  - name: Dumping other tables via django
+    shell: python {{ buildsystem_manage_py_path }}manage.py dumpdata --all --indent 1 -e lookup -e records -e test -e orion_comments -e ssdata -e releasenotes -e legacy -e hardware_options > django_dump.json
+
+  - name: Deleting the protocol database
+    sudo: false
+    command: mysqladmin --force --host={{ buildsystem_mysql_docker_name }} --user={{ buildsystem_mysql_user }} --password={{ buildsystem_mysql_password }} drop {{ buildsystem_supportsite_database_name }} create {{ buildsystem_supportsite_database_name }}
+
+  - name: Creating tables via django
+    sudo: false
+    command: python {{ buildsystem_manage_py_path }}manage.py migrate
+
+  - name: Removing default data populated via django table creation
+    sudo: false
+    command: mysql --host={{ buildsystem_mysql_docker_name }} --user={{ buildsystem_mysql_user }} --password={{ buildsystem_mysql_password }} --execute="DELETE FROM protocol.django_site WHERE 1>0; DELETE FROM protocol.auth_permission WHERE 1>0; DELETE FROM protocol.django_content_type WHERE 1>0;"
+
+  - name: Import data via django
+    command: python {{ buildsystem_manage_py_path }}manage.py loaddata /root/{{ item }}_dump.json
+    with_items:
+    - django
+    - auth
+    - ssdata
+    - hardware_options
+    - orion_comments
+    - lookup
+    - releasenotes
+    - records
+    - legacy
+    - test.teststation
+    - test.instruction
+    - test.result
+    - test.singletest
+    - test.cleanuprecord
+    - test.singleinputtest
+    - test.packagesinstalled
+    - test.testrecord
+    - test.inputtestrecord
+    - test.porttestrecord
+
+  - name: Copy build system tftp files to the new build system
+    copy:
+      dest: /opt/tftp_files/
+      force: yes
+      src: "{{ local_working_directory | expanduser }}build_system_tftp/"
+
+  - name: Copy build system testclient files to the new build system
+    copy:
+      dest: /opt/test_client_files/
+      force: yes
+      src: "{{ local_working_directory | expanduser }}build_system_testclient/"
+
+# ======================================================================================================================
+# Don't know if the following should be ran.
+#  - name: Removing sn 6346 Or5 because null customer_id
+#    command: mysql --host={{ buildsystem_mysql_docker_name }} --user={{ buildsystem_mysql_user }} --password={{ buildsystem_mysql_password }} --execute="DELETE FROM Orion5Table WHERE (Serial_Number = 6346)"
+#  - name: Removing sn 6347 Or5 because null customer_id
+#    command: mysql --host={{ buildsystem_mysql_docker_name }} --user={{ buildsystem_mysql_user }} --password={{ buildsystem_mysql_password }} --execute="DELETE FROM Orion5Table WHERE (Serial_Number = 6347)"
+# ======================================================================================================================
+
+- name: Setup new support site
+  hosts: supportsite_docker_container
+  vars_files:
+  - 'vars/basic.yml'
+  - 'vars/credentials.yml'
+  - 'vars/convert.yml'
+  tasks:
+  - name: Copy support site sql dump to new site
+    copy:
+      dest: /root/supportsite_mysql_protocol_dump_newline_clean.sql
+      force: yes
+      src: "{{ local_working_directory | expanduser }}supportsite_mysql_protocol_dump_newline_clean.sql"
+
+#  - name: Deleting the protocol database
+#    sudo: false
+#    command: mysqladmin --force --host={{ supportsite_mysql_docker_name }} --user={{ supportsite_mysql_user }} --password={{ supportsite_mysql_password }} drop {{ buildsystem_supportsite_database_name }} create {{ buildsystem_supportsite_database_name }}
+
+
+  - name: Importing SQL file
+    mysql_db:
+      login_host: "{{ supportsite_mysql_docker_name }}"
+      login_user: "{{ supportsite_mysql_user }}"
+      login_password: "{{ supportsite_mysql_password }}"
+      name: "{{ buildsystem_supportsite_database_name }}"
+      state: import
+      target: /root/supportsite_mysql_protocol_dump_newline_clean.sql
+
+  - name: Dumping tables via django
+    shell: python {{ supportsite_manage_py_path }}manage.py dumpdata {{ item }} --indent 1 > /root/{{ item }}_dump.json
+    with_items:
+    - password_reset
+    - support
+    - lookup
+    - records
+    - legacy
+    - releasenotes
+
+  - name: Dumping other tables via django
+    shell: python {{ supportsite_manage_py_path }}manage.py dumpdata --all --indent 1 -e password_reset -e support -e legacy -e lookup -e records -e releasenotes > django_dump.json
+
+  - name: Deleting the protocol database
+    sudo: false
+    command: mysqladmin --force --host={{ supportsite_mysql_docker_name }} --user={{ supportsite_mysql_user }} --password={{ supportsite_mysql_password }} drop {{ buildsystem_supportsite_database_name }} create {{ buildsystem_supportsite_database_name }}
+
+  - name: Creating tables via django
+    sudo: false
+    command: python {{ supportsite_manage_py_path }}manage.py migrate
+
+  - name: Removing default data populated via django table creation
+    sudo: false
+    command: mysql --host={{ supportsite_mysql_docker_name }} --user={{ supportsite_mysql_user }} --password={{ supportsite_mysql_password }} --execute="DELETE FROM protocol.django_site WHERE 1>0; DELETE FROM protocol.auth_permission WHERE 1>0; DELETE FROM protocol.django_content_type WHERE 1>0;"
+
+  - name: Import data via django
+    command: python {{ supportsite_manage_py_path }}manage.py loaddata /root/{{ item }}_dump.json
+    with_items:
+    - django
+    - lookup
+    - records
+    - support
+    - password_reset
+    - legacy
+    - releasenotes
+
+  - name: Copy support site static files to the new support site
+    copy:
+      dest: /opt/downloads/supportsite_static.tgz
+      force: yes
+      src: "{{ local_working_directory | expanduser }}supportsite_static.tgz"
+
+  - name: Untar support site static files.
+    command: tar -xz -f /opt/downloads/supportsite_static.tgz --directory=/opt/downloads/
+
+  - name: Removing tar file for the static dowloads
+    command: rm -f /opt/downloads/supportsite_static.tgz

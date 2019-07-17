@@ -1,0 +1,6 @@
+---
+old_buildsystem_ip:                          'linuxserver.novatech-llc.com'
+old_buildsystem_mysql_user:                  'build'
+old_supportsite_mysql_user:                  'root'
+buildsystem_ip:                              'buildsystem.novatech-llc.com'
+buildsystem_manage_py_path:                  '/opt/protocol/'

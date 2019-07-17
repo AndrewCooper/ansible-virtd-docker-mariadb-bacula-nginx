@@ -1,0 +1,44 @@
+---
+repo_destination:                            '/tmp/ansible_docker_checkout'
+support_site_repo:                           'https://git.novatech-llc.com/NovaTech-Testing/SupportSite.git'
+build_system_repo:                           'https://git.novatech-llc.com/NovaTech-Testing/BuildSystem.git'
+ssl_tar_file:                                '~/Workbench/openssl.tar'
+ncd_repo:                                    'https://svn.novatech-llc.com/NCD_Release'
+image_build_state_data: present
+container_start_state_data: present
+image_build_state_nondata: present
+container_start_state_nondata: reloaded
+buildsystem_code_for_supportsite:
+  - "legacy"
+  - "lookup"
+  - "nt_modules"
+  - "records"
+  - "releasenotes"
+supportsite_docker_repos:
+  SupportSite_database_data:
+    dir_name: docker-SupportSite_database_data
+    url: https://git.novatech-llc.com/NovaTech-Testing/docker-SupportSite_database_data.git
+  SupportSite_http_data_download:
+    dir_name: docker-SupportSite_http_data_download
+    url: https://git.novatech-llc.com/NovaTech-Testing/docker-SupportSite_http_data_download.git
+  SupportSite_http_data_ncdrelease:
+    dir_name: docker-SupportSite_http_data_ncdrelease
+    url: https://git.novatech-llc.com/NovaTech-Testing/docker-SupportSite_http_data_ncdrelease.git
+  SupportSite_http_data_ncdzip:
+    dir_name: docker-SupportSite_http_data_ncdzip
+    url: https://git.novatech-llc.com/NovaTech-Testing/docker-SupportSite_http_data_ncdzip.git
+  SupportSite_http_data_supportsystem:
+    dir_name: docker-SupportSite_http_data_supportsystem
+    url: https://git.novatech-llc.com/NovaTech-Testing/docker-SupportSite_http_data_supportsystem.git
+  SupportSite_database_server:
+    dir_name: docker-SupportSite_database_server
+    url: https://git.novatech-llc.com/NovaTech-Testing/docker-SupportSite_database_server.git
+  SupportSite_http_server:
+    dir_name: docker-SupportSite_http_server
+    url: https://git.novatech-llc.com/NovaTech-Testing/docker-SupportSite_http_server.git
+  SupportSite_ssh_server:
+    dir_name: docker-SupportSite_ssh_server
+    url: https://git.novatech-llc.com/NovaTech-Testing/docker-SupportSite_ssh_server.git
+  SupportSite_cron_service:
+    dir_name: docker-SupportSite_cron_service
+    url: https://git.novatech-llc.com/NovaTech-Testing/docker-SupportSite_cron_service.git

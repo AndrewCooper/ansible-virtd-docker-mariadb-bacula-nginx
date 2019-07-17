@@ -1,0 +1,251 @@
+---
+- name: Initialize ssl certs and keys for client and master
+  hosts: localhost
+  vars_files:
+  - 'vars/basic.yml'
+  vars:
+  - ca_subj:     '/CN=cert_auth_ts.novatech-llc.com/O=NovaTech/OU=Orion/C=US/ST=Kansas/L=Lenexa'
+  - server_subj: '/CN=buildsystem.novatech-llc.com/O=NovaTech/OU=Orion/C=US/ST=Kansas/L=Lenexa'
+  - client_subj: '/CN=www.novatech-llc.com/O=NovaTech/OU=Orion/C=US/ST=Kansas/L=Lenexa'
+
+  sudo: false
+  tasks:
+  - name: Makes sure the local dir for ssl files exists
+    file:
+      mode: 0775
+      path: "{{ local_working_directory | expanduser }}replication_ssl"
+      state: directory
+  - name: Remove any files from ssl directory
+    shell: rm -fr {{ local_working_directory | expanduser }}replication_ssl/*
+
+  - name: Generate ca key
+    shell: openssl genrsa 8192 > {{ local_working_directory | expanduser }}replication_ssl/ca-key.pem
+  - name: Generate ca.pem
+    shell: openssl req -sha1 -new -x509 -nodes -days 3650 -key {{ local_working_directory | expanduser }}replication_ssl/ca-key.pem -out {{ local_working_directory | expanduser }}replication_ssl/ca.pem -subj {{ ca_subj }}
+
+  - name: Generate server req
+    shell: openssl req -sha1 -newkey rsa:8192 -nodes -days 3650 -keyout {{ local_working_directory | expanduser }}replication_ssl/server-key.pem -out {{ local_working_directory | expanduser }}replication_ssl/server-req.pem -subj {{ server_subj }}
+  - name: Generate server key
+    shell: openssl rsa -in {{ local_working_directory | expanduser }}replication_ssl/server-key.pem -out {{ local_working_directory | expanduser }}replication_ssl/server-key.pem
+  - name: Generate server cert
+    shell: openssl x509 -days 3650 -sha1 -req -in {{ local_working_directory | expanduser }}replication_ssl/server-req.pem -CA {{ local_working_directory | expanduser }}replication_ssl/ca.pem -CAkey {{ local_working_directory | expanduser }}replication_ssl/ca-key.pem -set_serial 01 -out {{ local_working_directory | expanduser }}replication_ssl/server-cert.pem
+
+  - name: Generate replication client req
+    shell: openssl req -sha1 -newkey rsa:8192 -nodes -days 3650 -keyout {{ local_working_directory | expanduser }}replication_ssl/replication_user_client-key.pem -out {{ local_working_directory | expanduser }}replication_ssl/replication_user_client-req.pem -subj {{ client_subj }}
+  - name: Generate replication client key
+    shell: openssl rsa -in {{ local_working_directory | expanduser }}replication_ssl/replication_user_client-key.pem -out {{ local_working_directory | expanduser }}replication_ssl/replication_user_client-key.pem
+  - name: Generate replication client cert
+    shell: openssl x509 -days 3650 -sha1 -req -in {{ local_working_directory | expanduser }}replication_ssl/replication_user_client-req.pem -CA {{ local_working_directory | expanduser }}replication_ssl/ca.pem -CAkey {{ local_working_directory | expanduser }}replication_ssl/ca-key.pem -set_serial 01 -out {{ local_working_directory | expanduser }}replication_ssl/replication_user_client-cert.pem
+
+  # The following command can be used to verify the generated keys.
+  #openssl verify -CAfile ca.pem server-cert.pem replication_user_client-cert.pem
+
+  - name: Generate update_user client req
+    shell: openssl req -sha1 -newkey rsa:8192 -nodes -days 3650 -keyout {{ local_working_directory | expanduser }}replication_ssl/update_user_client-key.pem -out {{ local_working_directory | expanduser }}replication_ssl/update_user_client-req.pem -subj {{ client_subj }}
+  - name: Generate update_user client key
+    shell: openssl rsa -in {{ local_working_directory | expanduser }}replication_ssl/update_user_client-key.pem -out {{ local_working_directory | expanduser }}replication_ssl/update_user_client-key.pem
+  - name: Generate update_user client cert
+    shell: openssl x509 -days 3650 -sha1 -req -in {{ local_working_directory | expanduser }}replication_ssl/update_user_client-req.pem -CA {{ local_working_directory | expanduser }}replication_ssl/ca.pem -CAkey {{ local_working_directory | expanduser }}replication_ssl/ca-key.pem -set_serial 01 -out {{ local_working_directory | expanduser }}replication_ssl/update_user_client-cert.pem
+
+  # The following command can be used to verify the generated keys.
+  #openssl verify -CAfile ca.pem server-cert.pem update_user_client-cert.pem
+
+
+- name: Setup master db ssl
+  hosts: buildsystem_docker_container
+  vars_files:
+  - 'vars/basic.yml'
+  sudo: false
+  tasks:
+  - name: Makes sure the local dir for ssl files exists
+    file:
+      mode: 0775
+      path: "/var/lib/mysql/ssl/"
+      state: directory
+  - name: Remove any files from ssl directory
+    shell: rm -fr /var/lib/mysql/ssl/*
+  - name: Copy for ca.pem to the test station db server
+    copy:
+      dest: /var/lib/mysql/ssl/ca.pem
+      force: yes
+      src: "{{ local_working_directory | expanduser }}replication_ssl/ca.pem"
+  - name: Copy for server-cert.pem to the test station db server
+    copy:
+      dest: /var/lib/mysql/ssl/server-cert.pem
+      force: yes
+      src: "{{ local_working_directory | expanduser }}replication_ssl/server-cert.pem"
+  - name: Copy for server-key.pem to the test station db server
+    copy:
+      dest: /var/lib/mysql/ssl/server-key.pem
+      force: yes
+      src: "{{ local_working_directory | expanduser }}replication_ssl/server-key.pem"
+
+
+- name: Restart master to allow keys to work
+  hosts: buildsystem_server
+  vars_files:
+  - 'vars/basic.yml'
+  sudo: true
+  tasks:
+  - name: Restart build system database server
+    command: docker restart {{ docker_name_prefix }}TestStation_database_server
+
+
+- name: Setup master db
+  hosts: buildsystem_docker_container
+  vars_files:
+  - 'vars/basic.yml'
+  - 'vars/credentials.yml'
+  - 'vars/replication.yml'
+  sudo: false
+  tasks:
+  - include: buildsystem/tasks/create_db_user.yml
+    vars:
+      db_host:                 "{{ buildsystem_mysql_docker_name }}"
+      db_admin_user:           "{{ buildsystem_mysql_user }}"
+      db_admin_user_password:  "{{ buildsystem_mysql_password }}"
+      db_new_user:             "{{ buildsystem_mysql_replication_user }}"
+      db_new_user_password:    "{{ buildsystem_mysql_replication_user_password }}"
+      db_new_user_permissions: "{{ buildsystem_mysql_replication_user_permissions }}"
+      db_grant_cmd_end:        "{{ buildsystem_mysql_replication_user_cmd_tail }}"
+
+  - include: buildsystem/tasks/create_db_user.yml
+    vars:
+      db_host:                 "{{ buildsystem_mysql_docker_name }}"
+      db_admin_user:           "{{ buildsystem_mysql_user }}"
+      db_admin_user_password:  "{{ buildsystem_mysql_password }}"
+      db_new_user:             "{{ buildsystem_mysql_update_user }}"
+      db_new_user_password:    "{{ buildsystem_mysql_update_user_password }}"
+      db_new_user_permissions: "{{ buildsystem_mysql_update_user_permissions }}"
+      db_grant_cmd_end:        "{{ buildsystem_mysql_update_user_cmd_tail }}"
+
+  - name: Get master status file
+    shell: mysql -h{{ buildsystem_mysql_docker_name }} -u{{ buildsystem_mysql_user }} -p{{ buildsystem_mysql_password }} -e"SHOW MASTER STATUS\G;" | grep "File:" | sed s/.*File:.//
+    register: master_status_file
+
+  - name: Get master status position
+    shell: mysql -h{{ buildsystem_mysql_docker_name }} -u{{ buildsystem_mysql_user }} -p{{ buildsystem_mysql_password }} -e"SHOW MASTER STATUS\G;" | grep "Position:" | sed s/.*Position:.//
+    register: master_status_position
+
+  - name: Setting facts
+    set_fact:
+      master_file: "{{ master_status_file.stdout }}"
+      master_position: "{{ master_status_position.stdout }}"
+
+  - name: Dump db
+    shell: mysqldump --master-data -h{{ buildsystem_mysql_docker_name }} -u{{ buildsystem_mysql_user }} -p{{ buildsystem_mysql_password }} protocol releasenotes_component lookup_group records_orionrecord_orion_protocols lookup_group_build_options records_job lookup_protocol lookup_buildoption Orion5RTable records_orionrecord_groups lookup_group_protocols releasenotes_product records_buildrecord Orion16Table records_customer releasenotes_version records_orionrecord Orion5Table > /tmp/master_tables_dump.db
+
+  - name: Copy db dump to local system
+    fetch:
+      src: /tmp/master_tables_dump.db
+      flat: yes
+      dest: "{{ local_working_directory | expanduser }}master_tables_dump_for_replication.db"
+
+# ========= Slave
+- name: Setup slave db
+  hosts: supportsite_docker_container
+  vars_files:
+  - 'vars/basic.yml'
+  - 'vars/credentials.yml'
+  - 'vars/replication.yml'
+  sudo: false
+  tasks:
+  - name: Set User for remote db updates
+    replace:
+      dest: "{{ supportsite_manage_py_path }}support/remote_db.py"
+      regexp: "(.*'user':) .*"
+      replace: '\1 "{{ buildsystem_mysql_update_user }}",'
+  - name: Set Password for remote db updates
+    replace:
+      dest: "{{ supportsite_manage_py_path }}support/remote_db.py"
+      regexp: "(.*'passwd':) .*"
+      replace: '\1 "{{ buildsystem_mysql_update_user_password }}",'
+  - name: Set URL for remote db updates
+    replace:
+      dest: "{{ supportsite_manage_py_path }}support/remote_db.py"
+      regexp: "(.*'host':) .*"
+      replace: '\1 "{{ ss_url_to_build_system }}",'
+  - name: Set TCP Port for remote db updates
+    replace:
+      dest: "{{ supportsite_manage_py_path }}support/remote_db.py"
+      regexp: "(.*'port':) .*"
+      replace: '\1 {{ ss_replication_port_to_bs }},'
+
+  - name: Makes sure the local dir for ss db ssl files to bs db exists
+    file:
+      mode: 0775
+      path: "/var/lib/mysql/ssl/"
+      state: directory
+  - name: Remove any files from db ssl directory
+    shell: rm -fr /var/lib/mysql/ssl/*
+  - name: Copy ca.pem to the support site db server
+    copy:
+      dest: /var/lib/mysql/ssl/ca.pem
+      force: yes
+      src: "{{ local_working_directory | expanduser }}replication_ssl/ca.pem"
+  - name: Copy replication_user_client-cert.pem to the support site db server
+    copy:
+      dest: /var/lib/mysql/ssl/replication_user_client-cert.pem
+      force: yes
+      src: "{{ local_working_directory | expanduser }}replication_ssl/replication_user_client-cert.pem"
+  - name: Copy replication_user_client-key.pem to the support site db server
+    copy:
+      dest: /var/lib/mysql/ssl/replication_user_client-key.pem
+      force: yes
+      src: "{{ local_working_directory | expanduser }}replication_ssl/replication_user_client-key.pem"
+
+  - name: Makes sure the local dir for ss http ssl files to bs db exists
+    file:
+      mode: 0775
+      path: "/opt/supportsite/ssl/"
+      state: directory
+  - name: Remove any files from http ssl directory
+    shell: rm -fr /opt/supportsite/ssl/*
+  - name: Copy  ca.pem to the support site http server
+    copy:
+      dest: /opt/supportsite/ssl/ca.pem
+      force: yes
+      src: "{{ local_working_directory | expanduser }}replication_ssl/ca.pem"
+  - name: Copy for update_user_client-cert.pem to the support site http server
+    copy:
+      dest: /opt/supportsite/ssl/update_user_client-cert.pem
+      force: yes
+      src: "{{ local_working_directory | expanduser }}replication_ssl/update_user_client-cert.pem"
+  - name: Copy for update_user_client-key.pem to the support site http server
+    copy:
+      dest: /opt/supportsite/ssl/update_user_client-key.pem
+      force: yes
+      src: "{{ local_working_directory | expanduser }}replication_ssl/update_user_client-key.pem"
+
+  - name: Getting facts
+    set_fact:
+      master_file: "{{ hostvars[groups['buildsystem_docker_container'][0]].master_file }}"
+      master_position: "{{ hostvars[groups['buildsystem_docker_container'][0]].master_position }}"
+
+  - name: Copy dumped master data to slave
+    copy:
+      src: "{{ local_working_directory | expanduser }}master_tables_dump_for_replication.db"
+      dest: /tmp/master_tables_dump_for_replication.db
+      force: yes
+
+  - name: Stop slave replication
+    shell: mysql -h{{ supportsite_mysql_docker_name }} -u{{ supportsite_mysql_user }} -p{{ supportsite_mysql_password }} -e"STOP SLAVE;"
+
+  - name: Import dump data from master
+    shell: mysql -h{{ supportsite_mysql_docker_name }} -u{{ supportsite_mysql_user }} -p{{ supportsite_mysql_password }} {{ buildsystem_supportsite_database_name }} < /tmp/master_tables_dump_for_replication.db
+
+  - name: Setup slave to replicate
+    shell: mysql -h{{ supportsite_mysql_docker_name }} -u{{ supportsite_mysql_user }} -p{{ supportsite_mysql_password }} -e"CHANGE MASTER TO MASTER_HOST='{{ ss_url_to_build_system }}', MASTER_PORT={{ ss_replication_port_to_bs }}, MASTER_USER='{{ buildsystem_mysql_replication_user }}', MASTER_PASSWORD='{{ buildsystem_mysql_replication_user_password }}', MASTER_HEARTBEAT_PERIOD = 50, MASTER_LOG_FILE='{{ master_file }}', MASTER_LOG_POS={{ master_position }}, MASTER_SSL=1, MASTER_SSL_CA='/var/lib/mysql/ssl/ca.pem', MASTER_SSL_CAPATH='/var/lib/mysql/ssl/', MASTER_SSL_CERT='/var/lib/mysql/ssl/replication_user_client-cert.pem', MASTER_SSL_KEY='/var/lib/mysql/ssl/replication_user_client-key.pem';"
+
+  - name: Start slave replication
+    shell: mysql -h{{ supportsite_mysql_docker_name }} -u{{ supportsite_mysql_user }} -p{{ supportsite_mysql_password }} -e"START SLAVE;"
+
+#====
+- name: Restart support site web server so remote update works
+  hosts: supportsite_server
+  vars_files:
+  - 'vars/basic.yml'
+  sudo: true
+  tasks:
+  - name: Restart support site database server docker container
+    command: docker restart {{ docker_name_prefix }}SupportSite_database_server

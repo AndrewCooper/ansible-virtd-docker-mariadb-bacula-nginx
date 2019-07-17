@@ -1,0 +1,24 @@
+---
+- name: Makes sure the local dir for ssl files exists
+  file:
+    mode: 0775
+    path: "{{ buildsystem_mysql_data_dir }}/ssl/"
+    state: directory
+
+- name: Copy for ca.pem to the test station db server
+  copy:
+    dest: '{{ buildsystem_mysql_data_dir }}/ssl/ca.pem'
+    force: yes
+    src: '{{ buildsystem_database_ssl_ca }}.pem'
+
+- name: Copy for server-cert.pem to the test station db server
+  copy:
+    dest: '{{ buildsystem_mysql_data_dir }}/ssl/server-cert.pem'
+    force: yes
+    src: '{{ buildsystem_database_ssl_server }}.pem'
+
+- name: Copy for server-key.pem to the test station db server
+  copy:
+    dest: '{{ buildsystem_mysql_data_dir }}/ssl/server-key.pem'
+    force: yes
+    src: '{{ buildsystem_database_ssl_server }}.key'
