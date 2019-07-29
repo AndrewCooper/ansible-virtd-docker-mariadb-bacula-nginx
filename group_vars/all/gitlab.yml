@@ -11,7 +11,7 @@ gitlab_tokens:
 
 - user: buildbot
   name: Buildbot API Access
-  token: "{{ gitlab_user_buildbot_token }}"
+  token: "{{ gitlab_buildbot_token }}"
   scopes: ["api"]
 
 gitlab_hooks:
@@ -33,42 +33,42 @@ gitlab_users:
 - username: ansible
   name: Ansible Automation Tool
   email: ansible@novatech-llc.com
-  password: "{{ gitlab_user_ansibleremote_password }}"
+  password: "{{ ansibleremote_gitlab_password }}"
   sshkey_file: "{{ lookup('file', ansibleremote_user_public_key ) }}"
   sshkey_name: "ansibleremote user"
 
 - username: ansible
   name: Ansible Automation Tool
   email: ansible@novatech-llc.com
-  password: "{{ gitlab_user_ansibleremote_password }}"
+  password: "{{ ansibleremote_gitlab_password }}"
   sshkey_file: "{{ lookup('file', ansibleremote_root_public_key ) }}"
   sshkey_name: "ansibleremote root"
 
 - username: buildbot
   name: Build Robot
   email: buildbot@novatech-llc.com
-  password: "{{ gitlab_user_buildbot_password }}"
+  password: "{{ buildbot_gitlab_password }}"
   sshkey_file: "{{ lookup('file', buildbot_master_sshkey + '.pub') }}"
   sshkey_name: "buildbot-master"
 
 - username: buildbot
   name: Build Robot
   email: buildbot@novatech-llc.com
-  password: "{{ gitlab_user_buildbot_password }}"
+  password: "{{ buildbot_gitlab_password }}"
   sshkey_file: "{{ lookup('file', buildbot_worker_ntel_sshkey + '.pub') }}"
   sshkey_name: "buildbot-worker-ntel"
 
 - username: buildbot
   name: Build Robot
   email: buildbot@novatech-llc.com
-  password: "{{ gitlab_user_buildbot_password }}"
+  password: "{{ buildbot_gitlab_password }}"
   sshkey_file: "{{ lookup('file', buildbot_worker_ptxdist_sshkey + '.pub') }}"
   sshkey_name: "buildbot-worker-ptxdist"
 
 - username: buildbot
   name: Build Robot
   email: buildbot@novatech-llc.com
-  password: "{{ gitlab_user_buildbot_password }}"
+  password: "{{ buildbot_gitlab_password }}"
   confirm: no
   group: ntel/setup-scripts
   access_level: developer
