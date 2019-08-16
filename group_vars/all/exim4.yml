@@ -5,3 +5,23 @@ exim4_container_name: '{{ docker_name_prefix }}exim4'
 
 # Data volume directory for the syslog data
 exim4_syslog_datavolume_dir: '/var/log/docker_container/{{ exim4_container_name }}'
+
+MAIN_PACKAGE_VERSION: 4.84.2
+
+MAIN_LOCAL_DOMAINS: ['@', 'localhost', 'novatech-llc.com']
+
+MAIN_RELAY_TO_DOMAINS: []
+MAIN_RELAY_NETS: ['', '127.0.0.1' ,  '::1']
+
+MAIN_ACL_CHECK_RCPT: acl_check_rcpt
+MAIN_ACL_CHECK_DATA: acl_check_data
+
+MAIN_TLS_ADVERTISE_HOSTS: '*'
+MAIN_TLS_CERTIFICATE: /etc/ssl/private/exim.crt
+MAIN_TLS_PRIVATEKEY: /etc/ssl/private/exim.key
+
+MAIN_DAEMON_SMTP_PORTS: [25, 465, 587]
+MAIN_TLS_ON_CONNECT_PORTS: [465]
+
+MAIN_QUALIFY_DOMAIN: novatech-llc.com
+MAIN_QUALIFY_RECIPIENT: example.com

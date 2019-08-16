@@ -1,0 +1,6 @@
+---
+- name: restart exim4
+  docker_container:
+    name: '{{ exim4_container_name }}'
+    restart: yes
+    state: started
