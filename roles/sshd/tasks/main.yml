@@ -1,17 +1,17 @@
 ---
 # tasks file for sshd
 
-- name: lockdown root user
-  lineinfile:
+- name: Generate sshd configuration
+  template:
+    backup: no
     dest: /etc/ssh/sshd_config
-    regexp: '^[#]?PermitRootLogin .*$'
-    line: 'PermitRootLogin no'
-    state: present
+    follow: no
+    force: yes
+    group: root
+    mode: u=rw,g=,o=
+    owner: root
+    src: sshd_config.j2
+    validate: /usr/sbin/sshd -f %s -t
   notify: "restart sshd service"
 
-- name: Set ssh ListenAddress
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    regexp: '^[#]?ListenAddress .*$'
-    line: 'ListenAddress {{ ansible_default_ipv4["address"] }}'
-  notify: "restart sshd service"
+- meta: flush_handlers
