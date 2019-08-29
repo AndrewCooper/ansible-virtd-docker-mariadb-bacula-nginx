@@ -175,6 +175,8 @@ nexus_blob_split: false     # True - blobstores per format
 nexus_blobstores:
 - name: permanent
   path: '{{ nexus_data_dir }}/blobs/permanent'
+- name: archive
+  path: '{{ nexus_data_dir }}/blobs/archive'
 
 nexus_delete_default_repos: true
 
@@ -214,7 +216,11 @@ nexus_repos_pypi_proxy:
     remote_url: 'https://pypi.python.org/'
 
 nexus_config_raw: true
-nexus_repos_raw_group: []
+nexus_repos_raw_group:
+  - name: ntel
+    member_repos:
+      - ntel-release
+      - ntel-archive
 nexus_repos_raw_hosted:
   - name: docs
     strict_content_validation: false
@@ -224,6 +230,10 @@ nexus_repos_raw_hosted:
     strict_content_validation: false
     write_policy: allow  # one of "allow", "allow_once" or "deny"
     blob_store: permanent
+  - name: ntel-archive
+    strict_content_validation: false
+    write_policy: allow  # one of "allow", "allow_once" or "deny"
+    blob_store: archive
   - name: ntel-release
     strict_content_validation: false
     write_policy: allow  # one of "allow", "allow_once" or "deny"
