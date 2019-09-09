@@ -1,0 +1,30 @@
+concurrent = 1
+check_interval = 0
+
+[[runners]]
+  name = "threadripper"
+  url = "https://git.novatech-llc.com"
+  token = "267be0d020a22f3ceec0d233a157d1"
+  executor = "docker"
+  builds_dir = "/buildbot"
+  cache_dir = "/cache"
+  limit = 3
+
+  [runners.docker]
+    tls_verify = false
+    image = "alpine:latest"
+    privileged = false
+    disable_cache = false
+    shm_size = 0
+    pull_policy = "never"
+    network_mode = "frontend"
+    volumes = [
+      "/cache",
+      "/etc/docker_container.conf/production/gitlab-runner/id_rsa:/home/buildbot/.ssh/id_rsa",
+      "/etc/docker_container.conf/production/gitlab-runner/known_hosts:/home/buildbot/.ssh/known_hosts",
+      "/etc/docker_container.conf/production/gitlab-runner/netrc:/home/buildbot/.netrc",
+      "/etc/docker_container.conf/production/gitlab-runner/ptxdistrc:/home/buildbot/.ptxdist/ptxdistrc-2012.09",
+      "/etc/docker_container.conf/production/gitlab-runner/pydistutils.cfg:/home/buildbot/.pydistutils.cfg",
+    ]
+
+  [runners.cache]

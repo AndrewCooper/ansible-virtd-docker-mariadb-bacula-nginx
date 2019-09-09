@@ -1,0 +1,44 @@
+---
+# tasks file for gitlab-runner
+
+- name: Start Gitlab Runner
+  docker_container:
+    image: gitlab/gitlab-runner:latest
+    name: ntel-runner
+    networks:
+    - name: frontend
+    pull: yes
+    restart: no
+    restart_policy: unless-stopped
+    state: started
+    volumes:
+      - "/srv/ntel-runner/config:/etc/gitlab-runner"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+
+- name: Start Gitlab Runner
+  docker_container:
+    command:
+      - register
+      - --non-interactive
+      - --executor "docker"
+      - --docker-image alpine:latest
+      - --url "https://git.novatech-llc.com/"
+      - --registration-token "mUsH1PRNJRgn2NDSxkF4"
+      - --description "NTEL OpenEmbedded Runner"
+      - --tag-list "ntel"
+      - --run-untagged="true"
+      - --locked="false"
+      - --access-level="not_protected"
+    cleanup: yes
+    detach: false
+    image: gitlab/gitlab-runner:latest
+    name: ntel-runner-config
+    networks:
+    - name: frontend
+    pull: yes
+    restart: no
+    state: started
+    volumes:
+      - "/srv/ntel-runner/config:/etc/gitlab-runner"
+      - "/var/run/docker.sock:/var/run/docker.sock"
