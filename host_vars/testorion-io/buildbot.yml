@@ -1,0 +1,7 @@
+---
+buildbot_testorion_name: '{{ buildbot_worker_testorionio }}'
+buildbot_testorion_passwd: '{{ buildbot_worker_testorionio_passwd }}'
+buildbot_testorion_sshkey: '{{ buildbot_worker_testorionio_sshkey }}'
+buildbot_testorion_tlsca: '{{ buildbot_ca_pem }}'
+buildbot_testorion_tlskey: '{{ buildbot_worker_testorionio_tlskey }}'
+buildbot_testorion_tlspem: '{{ buildbot_worker_testorionio_tlspem }}'

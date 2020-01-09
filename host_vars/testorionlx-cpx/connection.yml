@@ -1,0 +1,5 @@
+---
+
+ansible_host: 172.16.103.51
+ansible_password: '{{ lookup("password", playbook_dir + "/credentials/buildbot_worker_testorionlxcpx/novatech@buildbot_worker_testorionlxcpx length=20") }}'
+ansible_become_password: '{{ lookup("password", playbook_dir + "/credentials/buildbot_worker_testorionlxcpx/root@buildbot_worker_testorionlxcpx length=20") }}'
