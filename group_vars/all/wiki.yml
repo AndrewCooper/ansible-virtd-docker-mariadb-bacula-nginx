@@ -1,0 +1,9 @@
+---
+
+wiki_hostname: "{{ production_role }}wiki.novatech-llc.com"
+
+# the name of the container being started
+wiki_container_name: '{{ docker_name_prefix }}wiki'
+
+# the name of the container being started
+wiki_db_container_name: '{{ docker_name_prefix }}wiki_db'

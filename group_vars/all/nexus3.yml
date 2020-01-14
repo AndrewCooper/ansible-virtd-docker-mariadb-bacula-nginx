@@ -1,4 +1,8 @@
+---
 nexus_version: 3.16.2
+
+nexus_hostname: "{{ production_role }}nexus.novatech-llc.com"
+nexus_container_name: '{{ docker_name_prefix }}nexus3'
 nexus_networks:
   - name: '{{ docker_network_frontend }}'
     aliases:

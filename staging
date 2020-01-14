@@ -6,9 +6,15 @@ testdaedalus.novatech-llc.com
 
 [docker_hosts]
 testdaedalus.novatech-llc.com
+staging-builder.novatech-llc.com
 
 [buildsystem]
-testdaedalus.novatech-llc.com
+staging-buildsystem.novatech-llc.com
 
 [builder]
+staging-builder.novatech-llc.com
+
+[staging_hosts]
 testdaedalus.novatech-llc.com
+staging-builder.novatech-llc.com
+staging-buildsystem.novatech-llc.com

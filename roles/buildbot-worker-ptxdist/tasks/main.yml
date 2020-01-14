@@ -99,6 +99,7 @@
   docker_image:
     build:
       args: '{{ image_args }}'
+      network: '{{ docker_network_frontend }}'
       path: '{{ image_dir }}'
       pull: yes
     name: '{{ image_name }}'
