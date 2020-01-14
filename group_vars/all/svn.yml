@@ -1,0 +1,6 @@
+---
+
+svn_hostname: "{{ production_role }}svn.novatech-llc.com"
+
+# the name of the container being started
+svn_container_name: '{{ docker_name_prefix }}svn'

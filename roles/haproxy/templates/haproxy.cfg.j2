@@ -69,31 +69,31 @@ frontend container_https_in
 
 #
 backend backend-svn
-    server svn1 svn.frontend:80
+    server svn1 {{ svn_container_name }}.{{ docker_network_frontend }}:80
 
 backend backend-ldapadmin
-    server phpldapadmin1 phpldapadmin.frontend:80
+    server phpldapadmin1 {{ phpldapadmin_container_name }}.{{ docker_network_frontend }}:80
 
 backend backend-exim4
-    server exim4_1 exim4.frontend:25
+    server exim4_1 {{ exim4_container_name }}.{{ docker_network_frontend }}:25
 
 backend backend-gitlab
-    server gitlab1 gitlab.frontend:80
+    server gitlab1 {{ gitlab_container_name }}.{{ docker_network_frontend }}:80
 
 backend backend-wiki
-    server wiki1 wiki.frontend:80
+    server wiki1 {{ wiki_container_name }}.{{ docker_network_frontend }}:80
 
 backend backend-mantisbt
-    server mantisbt1 mantisbt.frontend:80
+    server mantisbt1 {{ mantisbt_container_name }}.{{ docker_network_frontend }}:80
 
 backend backend-build
-    server build1 build.frontend:80
+    server build1 TestStation_http_server.{{ docker_network_frontend }}:80
 
 backend backend-testssh
-    server testssh1 testssh.frontend:80
+    server testssh1 testssh.{{ docker_network_frontend }}:80
 
 backend backend-buildbot
-    server buildbot1 buildbot.frontend:8080
+    server buildbot1 {{ docker_name_prefix }}buildbot.{{ docker_network_frontend }}:8080
 
 backend backend-nexus
-    server nexus1 nexus3.frontend:8081
+    server nexus1 {{ nexus_container_name }}.{{ docker_network_frontend }}:8081

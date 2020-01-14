@@ -1,0 +1,11 @@
+---
+
+openldap_hostname: "{{ production_role }}ldap.novatech-llc.com"
+
+# the name of the container being started
+openldap_container_name: '{{ docker_name_prefix }}ldap'
+
+phpldapadmin_hostname: "{{ production_role }}ldap.novatech-llc.com"
+
+# the name of the container being started
+phpldapadmin_container_name: '{{ docker_name_prefix }}phpldapadmin'

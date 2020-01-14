@@ -12,10 +12,10 @@ nexus_timezone: 'UTC'  # java timezone
 nexus_tmp_dir: '/tmp/nexus'
 nexus_script_dir: '{{ nexus_installation_dir }}/nexus-{{ nexus_version }}/etc/scripts'
 
-nexus_container_name: 'nexus3'
+nexus_container_name: '{{ docker_name_prefix }}nexus3'
 nexus_image_tag: 'sonatype/nexus3:{{ nexus_version}}'
-nexus_backup_volume: nexus-backup
-nexus_data_volume: nexus-data
+nexus_backup_volume: '{{ docker_name_prefix }}nexus-backup'
+nexus_data_volume: '{{ docker_name_prefix }}nexus-data'
 nexus_networks:
   - name: bridge
 nexus_port_args:

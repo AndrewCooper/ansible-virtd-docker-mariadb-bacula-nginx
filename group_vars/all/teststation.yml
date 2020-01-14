@@ -1,0 +1,3 @@
+build_hostname: "{{ production_role }}buildsystem.novatech-llc.com"
+testssh_hostname: "{{ production_role }}testssh.novatech-llc.com"
+ddio_hostname: "{{ production_role }}ddio.novatech-llc.com"

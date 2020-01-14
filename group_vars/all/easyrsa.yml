@@ -1,3 +1,4 @@
 ---
+easyrsa_hostname: "{{ production_role }}easyrsa.novatech-llc.com"
 
 easyrsa_ssh_port: 22

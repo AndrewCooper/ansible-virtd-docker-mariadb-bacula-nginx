@@ -1,0 +1,8 @@
+---
+
+ansible_become: false
+ansible_connection: ssh
+ansible_user: root
+ansible_password: '{{ buildsystem_ssh_root_user_password }}'
+
+build_ip_addr:        172.16.103.105

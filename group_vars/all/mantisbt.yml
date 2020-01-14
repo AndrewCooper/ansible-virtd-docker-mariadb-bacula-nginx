@@ -1,0 +1,9 @@
+---
+
+mantisbt_hostname: "{{ production_role }}mantis.novatech-llc.com"
+
+# the name of the container being started
+mantisbt_container_name: '{{ docker_name_prefix }}mantisbt'
+
+# the name of the container being started
+mantisbt_db_container_name: '{{ docker_name_prefix }}mantisbt_db'

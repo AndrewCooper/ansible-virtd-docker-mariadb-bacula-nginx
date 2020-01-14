@@ -1,5 +1,7 @@
 ---
 
+gitlab_hostname: "{{ production_role }}git.novatech-llc.com"
+
 # the name of the gitlab container
 gitlab_container_name: '{{ docker_name_prefix }}gitlab'
 

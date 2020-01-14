@@ -12,6 +12,8 @@
     known_hosts: "{{gitlab_keys.stdout}}"
     ntel_release_uri:    "https://{{nexus_hostname}}/repository/ntel-release"
     ntel_beta_uri:       "https://{{nexus_hostname}}/repository/ntel-unofficial"
+    ntel_gitmirror_uri:  "git://{{gitlab_hostname}}/PATH"
+    ntel_mirror_uri:     "https://{{nexus_hostname}}/repository/download"
     ntel_sstate_uri:     "https://{{nexus_hostname}}/repository/ntel-sstate"
     ptxdist_release_uri: "https://{{nexus_hostname}}/repository/ptxdist-release"
     ptxdist_beta_uri:    "https://{{nexus_hostname}}/repository/ptxdist-unofficial"

@@ -28,7 +28,7 @@
 
 - import_tasks: create_db_user.yml
   vars:
-    db_host:                 "{{ build_ip_addr }}"
+    db_host:                 "test_station_mysql_server"
     db_admin_user:           "root"
     db_admin_user_password:  "{{ buildsystem_database_root_password }}"
     db_new_user:             "build"
@@ -38,7 +38,7 @@
 
 - import_tasks: create_db_user.yml
   vars:
-    db_host:                 "{{ build_ip_addr }}"
+    db_host:                 "test_station_mysql_server"
     db_admin_user:           "root"
     db_admin_user_password:  "{{ buildsystem_database_root_password }}"
     db_new_user:             "remote_update"
@@ -48,7 +48,7 @@
 
 - import_tasks: create_db_user.yml
   vars:
-    db_host:                 "{{ build_ip_addr }}"
+    db_host:                 "test_station_mysql_server"
     db_admin_user:           "root"
     db_admin_user_password:  "{{ buildsystem_database_root_password }}"
     db_new_user:             "replication"

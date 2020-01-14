@@ -1,6 +1,7 @@
 ---
 
 ansible_user: ansibleremote
+ansible_host: 172.16.64.4
 
 daedalus_subnet: 172.16.0.0/16
 daedalus_net_connection: "System enp5s0f0"

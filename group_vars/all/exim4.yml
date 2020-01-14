@@ -1,5 +1,7 @@
 ---
 
+exim4_hostname: "{{ production_role }}mail.novatech-llc.com"
+
 # the name of the container being started
 exim4_container_name: '{{ docker_name_prefix }}exim4'
 

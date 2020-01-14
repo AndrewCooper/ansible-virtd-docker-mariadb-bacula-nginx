@@ -15,3 +15,8 @@ buildsystem.novatech-llc.com
 
 [builder]
 builder.novatech-llc.com
+
+[production_hosts]
+daedalus.novatech-llc.com
+builder.novatech-llc.com
+buildsystem.novatech-llc.com
