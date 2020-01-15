@@ -65,11 +65,14 @@
 # *****************************************************************************
 # Update or make the image.
 
-- name: Checkout image repo
-  git:
-    repo: '{{ exim4_image_repo }}'
-    version: master
-    dest: '{{ docker_projects_dir }}/docker-exim4'
+- name: Deploy Image Source
+  synchronize:
+    archive: yes
+    checksum: yes
+    compress: yes
+    src: '{{ exim4_image_repo }}/'
+    dest: '{{ docker_projects_dir }}/docker-exim4/'
+  register: deploy_source
 
 - name: build image
   docker_image:
@@ -79,7 +82,7 @@
     name: '{{ exim4_image_name }}'
     source: build
     tag: '{{ docker_image_tag }}'
-    force_source: "{{ docker_image_force_build }}"
+    force_source: "{{ deploy_source.changed }}"
 
 # *****************************************************************************
 # Create the data volumes
