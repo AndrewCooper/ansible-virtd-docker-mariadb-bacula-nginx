@@ -16,14 +16,15 @@
     path: "{{ docker_projects_dir }}"
     state: directory
 
-
-- name: Clone Git repos
-  git:
-    repo: "{{ item.value.url }}"
-    dest: "{{ docker_projects_dir }}/{{ item.value.dir_name }}"
-    force: yes
+- name: Deploy Image Sources
+  synchronize:
+    archive: yes
+    checksum: yes
+    compress: yes
+    src: "{{ item.value.url }}/"
+    dest: "{{ docker_projects_dir }}/{{ item.value.dir_name }}/"
+  register: deploy_source
   with_dict: "{{ build_system_docker_repos }}"
-
 
 - import_tasks: docker_containers/datacontainer_buildsystem.yml
 - import_tasks: docker_containers/datacontainer_database.yml

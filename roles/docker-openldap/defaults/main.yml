@@ -9,7 +9,7 @@ openldap_port_args:
 
 phpldapadmin_ip_addr: '127.0.0.1'
 phpldapadmin_hostname: ldap.example.com
-phpldapadmin_port_args: 
+phpldapadmin_port_args:
   - '80'
   - '443'
 
@@ -20,7 +20,7 @@ openldap_backup_files:
     dbnum: 1
 
 # the name of the image being duilt and used for the container
-openldap_image_repo: https://github.com/novatechweb/docker-openldap.git
+openldap_image_repo: containers/docker-openldap
 openldap_image_name: '{{ docker_registry_username }}/ldap'
 
 # the name of the container being started
@@ -38,7 +38,7 @@ openldap_docker_restore_dir: '{{ bacula_dest }}{{ openldap_docker_backup_dir }}'
 # Utility container - phpldapadmin
 
 # the name of the image used for the container
-phpldapadmin_image_repo: https://github.com/novatechweb/docker-phpldapadmin.git
+phpldapadmin_image_repo: containers/docker-phpldapadmin
 phpldapadmin_image_name: '{{ docker_registry_username }}/phpldapadmin'
 
 # the name of the container being started

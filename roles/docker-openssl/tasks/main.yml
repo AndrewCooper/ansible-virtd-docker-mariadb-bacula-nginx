@@ -41,11 +41,14 @@
 # *****************************************************************************
 # Update or make the image.
 
-- name: Checkout image repo
-  git:
-    repo: '{{ openssl_image_repo }}'
-    version: master
-    dest: '{{ docker_projects_dir }}/docker-openssl'
+- name: Deploy Image Source
+  synchronize:
+    archive: yes
+    checksum: yes
+    compress: yes
+    src: '{{ openssl_image_repo }}/'
+    dest: '{{ docker_projects_dir }}/docker-openssl/'
+  register: deploy_source
 
 - name: build image
   docker_image:
@@ -55,7 +58,7 @@
     name: '{{ openssl_image_name }}'
     source: build
     tag: '{{ docker_image_tag }}'
-    force_source: "{{ docker_image_force_build }}"
+    force_source: "{{ deploy_source.changed }}"
 
 # *****************************************************************************
 # Create the data volumes

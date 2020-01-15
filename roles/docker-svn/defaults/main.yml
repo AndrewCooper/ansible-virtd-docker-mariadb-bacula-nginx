@@ -3,7 +3,7 @@
 # The hostname passed as an envirnment variable into the container
 svn_ip_addr: '127.0.0.1'
 svn_hostname: svn.example.com
-svn_port_args: 
+svn_port_args:
   - '80'
   - '443'
 
@@ -11,7 +11,7 @@ svn_port_args:
 svn_repos: 'example'
 
 # the name of the image being duilt and used for the container
-svn_image_repo: https://github.com/novatechweb/docker-svn.git
+svn_image_repo: containers/docker-svn
 svn_image_name: '{{ docker_registry_username }}/svn'
 
 # the name of the container being started
