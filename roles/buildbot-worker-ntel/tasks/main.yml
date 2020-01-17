@@ -21,12 +21,12 @@
   - /cache/sstate
   docker_container:
     name: '{{ container_name }}-bootstrap'
-    image: 'alpine:latest'
+    image: 'debian:latest'
     volumes:
     - '{{ cache_volume }}:{{ cache_path }}:z'
     detach: no
     cleanup: yes
-    command: /bin/ash -c
+    command: /bin/bash -c
       "mkdir -p {{item}} &&
       chown -c -R {{buildbot_uid}}:{{buildbot_uid}} {{item}} &&
       chmod -v 777 {{item}}"
@@ -40,12 +40,12 @@
   - /buildbot
   docker_container:
     name: '{{ container_name }}-bootstrap'
-    image: 'alpine:latest'
+    image: 'debian:latest'
     volumes:
     - '{{ data_volume }}:{{ data_path }}:z'
     detach: no
     cleanup: yes
-    command: /bin/ash -c
+    command: /bin/bash -c
       "mkdir -p {{item}} &&
       if [ $(stat --printf='%u' '{{item}}') -ne {{buildbot_uid}} ]; then
         chown -c -R {{buildbot_uid}}:{{buildbot_uid}} {{item}};
