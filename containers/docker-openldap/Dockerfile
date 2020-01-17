@@ -7,12 +7,12 @@
 FROM ubuntu:14.04
 MAINTAINER Joseph Lutz <Joseph.Lutz@novatechweb.com>
 
-ENV OPENLDAP_VERSION 2.4
+ENV OPENLDAP_VERSION 2.4.31
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
-        ldap-utils=${OPENLDAP_VERSION}* \
-        slapd=${OPENLDAP_VERSION}* \
+        ldap-utils \
+        slapd \
     && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
