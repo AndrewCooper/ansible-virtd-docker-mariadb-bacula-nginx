@@ -74,8 +74,14 @@
     comparisons: {'*': strict}
     detach: true
     env:
+      APACHE_DOCUMENT_ROOT: "/var/www/html/"
+      APACHE_LOG_DIR: "/tmp"
+      LDAP_URL: "ldap://{{openldap_container_name}}/ou=user,dc=novatech?uid?sub?(objectClass=Person)"
+      LDAP_BIND_DN: "cn=proxyagent,dc=novatech"
+      LDAP_BIND_PW: '{{ openldap_proxyagent_password }}'
+      LDAP_GROUP_DN: "cn=svn.novatech-llc.com,ou=group,dc=novatech"
+      SVN_BASE_DIR: "/var/lib/svn"
       SVN_HOSTNAME: '{{ svn_hostname }}'
-      SVN_LDAP_PASSWORD: '{{ openldap_proxyagent_password }}'
     hostname: '{{ svn_container_name }}'
     image: '{{ svn_image_name }}:{{ docker_image_tag }}'
     name: '{{ svn_container_name }}'

@@ -1,8 +1,6 @@
 ---
 
-svn_port_args:
-- "{{ svn_ip_addr }}:80:80"
-- "{{ svn_ip_addr }}:443:443"
+svn_port_args: []
 
 gitlab_port_args:
 - "{{ gitlab_ip_addr }}:80:80"
@@ -50,6 +48,8 @@ haproxy_port_args:
 - "{{ nexus_ip_addr }}:443:443"
 - "{{ phpldapadmin_ip_addr }}:80:80"
 - "{{ phpldapadmin_ip_addr }}:443:443"
+- "{{ svn_ip_addr }}:80:80"
+- "{{ svn_ip_addr }}:443:443"
 - "{{ wiki_ip_addr }}:80:80"
 - "{{ wiki_ip_addr }}:443:443"
 

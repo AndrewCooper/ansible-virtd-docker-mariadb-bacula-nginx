@@ -5,7 +5,7 @@ SVN_BASE_DIR=/var/lib/svn
 IMPORT_EXPORT_PATH=/tmp/import_export
 
 SVN_HOSTNAME=${SVN_HOSTNAME:=svn.example.com}
-SVN_LDAP_PASSWORD=${SVN_LDAP_PASSWORD:=novatech}
+LDAP_BIND_PW=${LDAP_BIND_PW:=novatech}
 
 # ************************************************************
 # Options passed to the docker container to run scripts
@@ -16,31 +16,12 @@ SVN_LDAP_PASSWORD=${SVN_LDAP_PASSWORD:=novatech}
 
 case ${1} in
     svn)
-        # Set the server name
-        if [[ ! -z "${SVN_HOSTNAME}" ]]; then
-            echo >&2 "Setting SVN Hostname: ${SVN_HOSTNAME}"
-            # change any value of SVN_HOSTNAME to the value
-            sed -i 's|SVN_HOSTNAME|'${SVN_HOSTNAME}'|' \
-                /etc/apache2/sites-available/000-default-ssl.conf \
-                /etc/apache2/sites-available/000-default.conf \
-                /etc/websvn/config.php
-            # update the ServerName line
-            sed -i 's|ServerName .*$|ServerName '${SVN_HOSTNAME}'|' \
-                /etc/apache2/sites-available/000-default-ssl.conf \
-                /etc/apache2/sites-available/000-default.conf
-#            sed -i 's|ServerName .*$|ServerName '${SVN_HOSTNAME}'|' \
-#                /etc/websvn/config.php
-            # Update the LDAP proxyagent password
-            sed -i 's|AuthLDAPBindPassword.*$|AuthLDAPBindPassword '${SVN_LDAP_PASSWORD}'|' \
-                /etc/apache2/sites-available/000-websvn.conf \
-                /etc/apache2/mods-available/ldap.conf
-        fi
         echo >&2 "Adding SVN repositories:"
         # Create apache config entries for each available repository
         repo_conf_dir=/etc/apache2/sites-available/dav_svn
         [[ -e ${repo_conf_dir} ]] && \
             rm -rf ${repo_conf_dir}
-        mkdir ${repo_conf_dir}
+        mkdir -p ${repo_conf_dir}
         svn_repos="$(cd ${SVN_BASE_DIR};ls -1)"
         for repo_path in ${svn_repos} ; do
             if [[ ! -f ${repo_path}/format ]]; then
@@ -52,24 +33,23 @@ case ${1} in
             cat << EOF > ${repo_conf_dir}/${repo_name}.conf
 <Location /${repo_name}>
     DAV svn
-    SVNPath ${SVN_BASE_DIR}/${repo_name}
+    SVNPath "${SVN_BASE_DIR}/${repo_name}"
     AuthType Basic
     AuthBasicProvider ldap
     AuthName "svn repository"
-    AuthLDAPURL "ldap://ldap/ou=user,dc=novatech?uid?sub?(objectClass=Person)"
+    AuthLDAPURL \${LDAP_URL}
     AuthLDAPBindAuthoritative off
     AuthLDAPSearchAsUser on
     AuthLDAPCompareAsUser on
-    AuthLDAPBindDN cn=proxyagent,dc=novatech
-    AuthLDAPBindPassword ${SVN_LDAP_PASSWORD}
+    AuthLDAPBindDN \${LDAP_BIND_DN}
+    AuthLDAPBindPassword \${LDAP_BIND_PW}
     AuthLDAPGroupAttribute memberUid
     AuthLDAPGroupAttributeIsDN off
     <RequireAll>
         Require valid-user
-        Require ssl
         <RequireAny>
-            Require ldap-group cn=%{SERVER_NAME},ou=group,dc=novatech
-            Require ldap-group cn=${repo_name},cn=%{SERVER_NAME},ou=group,dc=novatech
+            Require ldap-group ${LDAP_GROUP_DN}
+            Require ldap-group cn=${repo_name},${LDAP_GROUP_DN}
         </RequireAny>
     </RequireAll>
 </Location>
@@ -79,7 +59,7 @@ EOF
         # Apache gets grumpy about PID files pre-existing
         rm -f /var/run/apache2/apache2.pid
         # Start apache
-        exec apache2 -D FOREGROUND
+        exec apache2-foreground
         ;;
 
     backup)
