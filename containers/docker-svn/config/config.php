@@ -116,7 +116,7 @@ $config->setSedPath("/bin");
 // To add only a subset of repositories specified by the parent path you can call the function with a pattern.
 //
 // $config->parentPath('Path/to/parent (e.g. c:\\svn)', 'group', '/^beginwith/');
-$config->parentPath("SVN_BASE_DIR");
+$config->parentPath($_ENV["SVN_BASE_DIR"]);
 
 // }}}
 
