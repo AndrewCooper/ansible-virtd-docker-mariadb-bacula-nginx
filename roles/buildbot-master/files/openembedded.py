@@ -40,7 +40,7 @@ c['workers'] = [
     worker.Worker(
         os.getenv('BUILDBOT_WORKER_NTEL'),
         os.getenv('BUILDBOT_WORKER_NTEL_PASS'),
-        max_builds=3),
+        max_builds=4),
 ]
 
 # CHANGESOURCES
@@ -420,6 +420,11 @@ class BitBakeFactory(util.BuildFactory):
             description="configuring",
             descriptionDone="configured",
             command=["./oebb.sh", "config", util.Property('machine')]))
+        self.addStep(steps.ShellCommand(
+            name="update layers",
+            description="updating",
+            descriptionDone="updated",
+            command=["./oebb.sh", "update"]))
         self.addStep(BitBakeConf(auto_conf, conf_file='auto.conf'))
 
         if build_steps:
