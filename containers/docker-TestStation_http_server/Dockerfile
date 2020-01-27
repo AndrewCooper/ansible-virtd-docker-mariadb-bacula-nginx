@@ -20,29 +20,28 @@ RUN apt-get update  && \
                     genisoimage=9:1* && \
     rm -rf /var/lib/apt/lists/*
 #---------------------------
-RUN rm -rf /var/www/html && \
-    mkdir -p /var/lock/apache2 \
+
+COPY config_files/ /etc/TestStation/
+RUN pip install -r /etc/TestStation/requirements.txt \
+&&  install /etc/TestStation/httpd.conf   /etc/apache2/conf-available/httpd.conf \
+&&  install /etc/TestStation/apache2.conf /etc/apache2/apache2.conf \
+&& /usr/sbin/a2enconf httpd \
+&& /usr/sbin/a2disconf charset \
+                        localized-error-pages \
+                        other-vhosts-access-log \
+                        security serve-cgi-bin \
+&&  rm -rf /var/www/html \
+&&  mkdir -p /var/lock/apache2 \
              /var/run/apache2 \
              /var/log/apache2 \
-             /var/www/html && \ 
-    chown -R www-data:www-data /var/lock/apache2 \
+             /var/www/html \
+&&  ln -sf /dev/stdout /var/log/apache2/access.log \
+&&  ln -sf /dev/stderr /var/log/apache2/error.log \
+&&  ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log \
+&&  chown -R www-data:www-data /var/lock/apache2 \
                                /var/run/apache2 \
                                /var/log/apache2 \
                                /var/www/html
-#---------------------------
-RUN pip install "django<1.8" \
-                "mysqlclient>=1.3" \
-                "pyserial>=2.7" \
-                "sqlparse<0.3"
-#---------------------------
-
-COPY ./config_files/httpd.conf   /etc/apache2/conf-available/httpd.conf
-COPY ./config_files/apache2.conf /etc/apache2/apache2.conf
-RUN /usr/sbin/a2enconf httpd
-RUN /usr/sbin/a2disconf charset \
-                        localized-error-pages \
-                        other-vhosts-access-log \
-                        security serve-cgi-bin
 
 COPY httpd-foreground /usr/local/bin/
 WORKDIR /var/www/html
