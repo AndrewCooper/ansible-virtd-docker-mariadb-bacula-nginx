@@ -1,6 +1,27 @@
 #! /bin/bash
 
-#PYTHONUNBUFFERED=1 \
+INVENTORY="staging"
+PLAYBOOK="site.yml"
+VERBOSITY="v"
+
+while getopts "i:p:v" OPTION; do
+  case $OPTION in
+  i)
+    INVENTORY="$OPTARG"
+    ;;
+  p)
+    PLAYBOOK="$OPTARG"
+    ;;
+  v)
+    VERBOSITY="${VERBOSITY}v"
+    ;;
+  *)
+    echo "Incorrect options provided"
+    exit 1
+    ;;
+  esac
+done
+shift $((OPTIND-1))
 
 ANSIBLE_ENABLE_TASK_DEBUGGER=True \
 ANSIBLE_FORCE_COLOR=true \
@@ -9,6 +30,6 @@ ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes -o Contr
 exec ansible-playbook \
         --connection=ssh \
         --timeout=30 \
-        --inventory-file=staging \
-        -vv \
-        site.yml "$@"
+        --inventory-file="${INVENTORY}" \
+        -${VERBOSITY} \
+        "${PLAYBOOK}" "$@"
