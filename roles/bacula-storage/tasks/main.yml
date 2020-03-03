@@ -7,7 +7,7 @@
 - name: Install/setup Bacula Storage
   yum:
     name:
-    - bacula-storage
+    - bacula-mysql-9.4.4-1.el7
     state: present
 
 - name: Create configuration directory
@@ -30,7 +30,9 @@
   notify: "restart bacula-sd"
 
 - name: Test Bacula Storage configuration
-  command: /usr/sbin/bacula-sd -t -c {{ bacula_storage_config_dir }}/bacula-sd.conf
+  command: |
+    {{ bacula_install_bindir}}/bacula-sd -t
+    -c {{ bacula_storage_config_dir }}/bacula-sd.conf
   changed_when: false
 
 - name: Create Storage location

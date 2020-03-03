@@ -12,6 +12,8 @@
   - role: mariadb
     mariadb_open_firewall: false
     mariadb_remote_root_access: false
+  - role: bacula-common
+    tags: bacula-common
   - role: bacula-director
     tags: bacula-director
   - role: bacula-storage

@@ -1,2 +1,2 @@
-echo "umount {{ bacula_storage }}" | bconsole
+echo "umount TapeDrive" | bconsole
 mt -f '{{ bacula_storage_device_archive_device }}' eject

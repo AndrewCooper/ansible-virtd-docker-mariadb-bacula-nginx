@@ -6,14 +6,12 @@
     - bacula_monitor_password is defined
     - bacula_catalog_password is defined
 
-- import_tasks: bacula-user.yml
-
 - import_tasks: mariadb_setup.yml
 
 - name: Install/setup Bacula Director
   yum:
     name:
-    - bacula-director
+    - bacula-mysql-9.4.4-1.el7
     state: present
   notify: "restart bacula-dir"
 
@@ -76,6 +74,7 @@
     - '{{ bacula_bootstrap_dir }}'
     - '{{ bacula_catalog_dir }}'
     - '{{ bacula_director_working_dir }}'
+    - '{{ bacula_filestorage_dir }}'
 
 - name: Configure Bacula Director
   template:
@@ -87,7 +86,9 @@
   notify: "restart bacula-dir"
 
 - name: Test Bacula Director configuration
-  command: /usr/sbin/bacula-dir -t -c {{ bacula_director_config_dir }}/bacula-dir.conf
+  command: |
+    {{ bacula_install_bindir }}/bacula-dir -t
+    -c {{ bacula_director_config_dir }}/bacula-dir.conf
   changed_when: false
 
 - name: Enable and start Bacula Director

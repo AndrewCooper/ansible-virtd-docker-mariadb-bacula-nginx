@@ -1,11 +1,11 @@
 ---
-bacula_install_prefix: /usr
-bacula_install_bindir: '{{ bacula_install_prefix }}/sbin'
+bacula_install_prefix: /opt/bacula
+bacula_install_bindir: '{{ bacula_install_prefix }}/bin'
 bacula_install_libdir: '{{ bacula_install_prefix }}/lib64'
-bacula_install_sysconfdir: /etc/bacula
-bacula_install_scriptdir: '{{ bacula_install_prefix }}/libexec/bacula'
-bacula_install_working_dir: '/var/spool/bacula'
-bacula_install_pid_dir: '/var/run'
+bacula_install_sysconfdir: '{{ bacula_install_prefix }}/etc'
+bacula_install_scriptdir: '{{ bacula_install_prefix }}/scripts'
+bacula_install_working_dir: '{{ bacula_install_prefix }}/working'
+bacula_install_pid_dir: '{{ bacula_install_prefix }}/working'
 
 bacula_client_address: 127.0.0.1
 bacula_client_concurrent_jobs: 20

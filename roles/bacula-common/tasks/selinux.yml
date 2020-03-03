@@ -1,0 +1,49 @@
+---
+
+- sefcontext:
+    setype: bacula_exec_t
+    ftype: f
+    target: "{{ bacula_install_bindir }}/.*"
+    state: present
+
+- sefcontext:
+    setype: bacula_admin_exec_t
+    ftype: f
+    target: "{{ bacula_install_bindir }}/bat"
+    state: present
+
+- sefcontext:
+    setype: bacula_admin_exec_t
+    ftype: f
+    target: "{{ bacula_install_bindir }}/bconsole"
+    state: present
+
+- sefcontext:
+    setype: bacula_etc_t
+    ftype: a
+    target: "{{ bacula_install_sysconfdir }}.*"
+    state: present
+
+- sefcontext:
+    setype: bacula_log_t
+    ftype: a
+    target: "{{ bacula_log_dir }}.*"
+    state: present
+
+- sefcontext:
+    setype: bacula_exec_t
+    ftype: f
+    target: "{{ bacula_install_scriptdir }}/.*"
+    state: present
+
+- sefcontext:
+    setype: bacula_var_run_t
+    ftype: f
+    target: "{{ bacula_install_pid_dir }}/.*\\.pid"
+    state: present
+
+- sefcontext:
+    setype: bacula_spool_t
+    ftype: f
+    target: "{{ bacula_install_pid_dir }}/.*\\.state"
+    state: present

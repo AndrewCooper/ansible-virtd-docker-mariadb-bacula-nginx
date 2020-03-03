@@ -3,6 +3,7 @@
     name:
     - checkpolicy
     - policycoreutils-python
+    state: present
 
 - name: Create temp directory for policy creation
   file:

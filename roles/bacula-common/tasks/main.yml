@@ -1,0 +1,6 @@
+---
+# tasks file for bacula-common
+
+- import_tasks: bacula-user.yml
+
+- import_tasks: selinux.yml

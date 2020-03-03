@@ -1,26 +1,31 @@
 ---
 
-bacula_install_prefix: '/usr'
-bacula_install_bindir: '{{ bacula_install_prefix }}/sbin'
+bacula_install_prefix: /opt/bacula
+bacula_install_bindir: '{{ bacula_install_prefix }}/bin'
 bacula_install_libdir: '{{ bacula_install_prefix }}/lib64'
-bacula_install_sysconfdir: '/etc/bacula'
-bacula_install_scriptdir: '{{ bacula_install_prefix }}/libexec/bacula'
-bacula_install_working_dir: '/var/spool/bacula'
-bacula_install_pid_dir: '/var/run'
+bacula_install_plugindir: '{{ bacula_install_prefix }}/plugins'
+bacula_install_sysconfdir: '{{ bacula_install_prefix }}/etc'
+bacula_install_scriptdir: '{{ bacula_install_prefix }}/scripts'
+bacula_install_working_dir: '{{ bacula_install_prefix }}/working'
+bacula_install_pid_dir: '{{ bacula_install_prefix }}/working'
 
 bacula_scriptdir: '{{ bacula_install_scriptdir }}'
 bacula_sysconfdir: '{{ bacula_install_sysconfdir }}'
 
 bacula_home_dir: '/home/bacula'
-bacula_data_dir: '/var/lib/bacula'
+bacula_data_dir: '/mnt/backups'
 
-bacula_log_dir: '/var/log/bacula'
-bacula_pid_dir: '/var/run/bacula'
-bacula_working_dir: '{{ bacula_data_dir }}/state'
+bacula_log_dir: '{{ bacula_install_prefix }}/log'
+bacula_pid_dir: '{{ bacula_install_pid_dir }}'
+bacula_working_dir: '{{ bacula_install_working_dir }}'
 bacula_scripts_bootstrap_backup: "{{ bacula_scriptdir }}/bacula-bootstrap-backup"
+bacula_scripts_assembly_dir: "{{ bacula_scriptdir }}/script-assembly"
+bacula_scripts_after_backup: '{{ bacula_scriptdir }}/after_backup'
+bacula_scripts_before_backup: '{{ bacula_scriptdir }}/before_backup'
 
 bacula_bootstrap_dir: "{{ bacula_data_dir }}/bootstrap"
 bacula_catalog_dir: '{{ bacula_data_dir }}/catalog'
+bacula_filestorage_dir: '{{ bacula_data_dir }}/files'
 
 bacula_client_address: "127.0.0.1"
 bacula_client_concurrent_jobs: '20'
@@ -60,5 +65,6 @@ bacula_storage_device_type: Tape
 bacula_storage_name: "bacula-sd"
 bacula_storage_password: '{{ lookup("password", playbook_dir + "/credentials/bacula/storage", length=20) }}'
 bacula_storage_pid_dir: "{{ bacula_pid_dir }}"
+bacula_storage_plugins_dir: '{{ bacula_install_plugindir }}'
 bacula_storage_port: '9103'
 bacula_storage_working_dir: "{{ bacula_working_dir }}"

@@ -7,7 +7,7 @@
 - name: Install/setup Bacula Console
   yum:
     name:
-    - bacula-console
+    - bacula-mysql-9.4.4-1.el7
     state: present
 
 - name: Create configuration directory

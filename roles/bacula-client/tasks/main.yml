@@ -8,7 +8,7 @@
 - name: Install/setup Bacula Client
   yum:
     name:
-    - bacula-client
+    - bacula-mysql-9.4.4-1.el7
     state: present
 
 - name: Create configuration directory
@@ -31,7 +31,9 @@
   notify: "restart bacula-fd"
 
 - name: Test Bacula client configuration
-  command: /usr/sbin/bacula-fd -t -c {{ bacula_client_config_dir }}/bacula-fd.conf
+  command: |
+    {{ bacula_install_bindir }}/bacula-fd -t
+    -c {{ bacula_client_config_dir }}/bacula-fd.conf
   changed_when: false
 
 - name: Enable and start Bacula Client

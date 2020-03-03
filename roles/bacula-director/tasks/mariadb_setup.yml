@@ -1,9 +1,9 @@
 ---
-- name: Use libbaccats-mysql
-  alternatives:
-    link: '{{ bacula_install_libdir }}/libbaccats.so'
-    name: libbaccats.so
-    path: '{{ bacula_install_libdir }}/libbaccats-mysql.so'
+# - name: Use libbaccats-mysql
+#   alternatives:
+#     link: '{{ bacula_install_libdir }}/libbaccats.so'
+#     name: libbaccats.so
+#     path: '{{ bacula_install_libdir }}/libbaccats-mysql.so'
 
 # - name: Flush mysql privileges
 #   shell: mysql -u root -e "FLUSH PRIVILEGES;"
