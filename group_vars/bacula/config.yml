@@ -68,3 +68,6 @@ bacula_storage_pid_dir: "{{ bacula_pid_dir }}"
 bacula_storage_plugins_dir: '{{ bacula_install_plugindir }}'
 bacula_storage_port: '9103'
 bacula_storage_working_dir: "{{ bacula_working_dir }}"
+
+bacula_cloud_id:                     '{{ lookup("password", playbook_dir + "/credentials/bacula/cloud-id" , length=20) }}'
+bacula_cloud_key:                    '{{ lookup("password", playbook_dir + "/credentials/bacula/cloud-key" , length=20) }}'
