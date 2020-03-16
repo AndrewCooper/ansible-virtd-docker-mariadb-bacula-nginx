@@ -1,0 +1,15 @@
+---
+
+bacula_master_keydir: '{{ playbook_dir }}/credentials/bacula/master'
+bacula_master_rsakey: '{{ bacula_master_keydir }}/master.key'
+bacula_master_rsacsr: '{{ bacula_master_keydir }}/master.csr'
+bacula_master_rsacert: '{{ bacula_master_keydir }}/master.cert'
+
+bacula_fd_keydir: '{{ playbook_dir }}/credentials/bacula/bacula-fd'
+bacula_fd_rsakey: '{{ bacula_fd_keydir }}/bacula-fd.key'
+bacula_fd_rsacsr: '{{ bacula_fd_keydir }}/bacula-fd.csr'
+bacula_fd_rsacert: '{{ bacula_fd_keydir }}/bacula-fd.cert'
+
+
+bacula_encrypt_installdir: /etc/bacula/encryption
+bacula_fd_rsapem: '{{ bacula_encrypt_installdir }}/bacula-fd.pem'

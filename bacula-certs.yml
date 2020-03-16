@@ -1,0 +1,132 @@
+- name: Cleanup tasks
+  hosts: bacula
+  vars:
+  tasks:
+  - name: Generate credentials locally
+    delegate_to: localhost
+    block:
+    - name: Install cryptography python module
+      pip:
+        name: cryptography
+        state: present
+
+    - name: Makes sure the local dir for ssl files exists
+      file:
+        mode: 0700
+        path: '{{ item }}'
+        state: directory
+      loop:
+      - '{{ bacula_master_keydir }}'
+      - '{{ bacula_fd_keydir }}'
+
+    # - name: Generate master key
+    #   openssl_privatekey:
+    #     path: '{{ bacula_master_rsakey }}'
+    #     size: 8192
+    #     type: RSA
+    #     state: present
+    #   register: master_key
+
+    # - name: Generate master req
+    #   openssl_csr:
+    #     path: '{{ bacula_master_rsacsr }}'
+    #     privatekey_path: '{{ bacula_master_rsakey }}'
+    #     CN: bacula-master
+    #     O: NovaTech
+    #     OU: Orion
+    #     C: US
+    #     ST: Kansas
+    #     L: Lenexa
+    #     state: present
+    #   when: master_key.changed
+
+    # - name: Generate master cert
+    #   openssl_certificate:
+    #     csr_path: '{{ bacula_master_rsacsr }}'
+    #     path: '{{ bacula_master_rsacert }}'
+
+    #     privatekey_path: '{{ bacula_master_rsakey }}'
+    #     provider: selfsigned
+    #     selfsigned_not_after: "+3650d"
+    #     state: present
+    #   when: master_key.changed
+
+    - name: Generate master cert
+      command: |
+        openssl req -nodes
+        -subj '/CN=bacula-master' -days 3560
+        -newkey rsa:8192 -sha256 -keyout {{bacula_master_rsakey}}
+        -x509 -out {{bacula_master_rsacert}}
+      args:
+        creates: '{{ bacula_master_rsacert}}'
+
+    # - name: Generate bacula-fd key
+    #   openssl_privatekey:
+    #     path: '{{ bacula_fd_rsakey }}'
+    #     size: 8192
+    #     type: RSA
+    #     state: present
+    #   register: fd_key
+
+    # - name: Generate bacula-fd req
+    #   openssl_csr:
+    #     path: '{{ bacula_fd_rsacsr }}'
+    #     privatekey_path: '{{ bacula_fd_rsakey }}'
+    #     CN: bacula-fd
+    #     O: NovaTech
+    #     OU: Orion
+    #     C: US
+    #     ST: Kansas
+    #     L: Lenexa
+    #     state: present
+    #     create_subject_key_identifier: yes
+    #   when: fd_key.changed
+
+    # - name: Generate bacula-fd cert
+    #   openssl_certificate:
+    #     csr_path: '{{ bacula_fd_rsacsr }}'
+    #     path: '{{ bacula_fd_rsacert }}'
+
+    #     privatekey_path: '{{ bacula_fd_rsakey }}'
+    #     provider: selfsigned
+    #     selfsigned_not_after: "+3650d"
+    #     state: present
+    #   when: fd_key.changed
+
+    - name: Generate fd cert
+      command: |
+        openssl req -nodes
+        -subj '/CN=bacula-fd' -days 3560
+        -newkey rsa:8192 -sha256 -keyout {{bacula_fd_rsakey}}
+        -x509 -out {{bacula_fd_rsacert}}
+      args:
+        creates: '{{ bacula_fd_rsacert}}'
+
+  - name: Create certificate directory on target
+    become: yes
+    file:
+      mode: 'u=rwx,g=,o='
+      owner: bacula
+      group: bacula
+      path: '{{ bacula_encrypt_installdir }}'
+      state: directory
+
+  - name: Copy certificates and keys to target
+    become: yes
+    copy:
+      mode: 'u=rw,g=,o='
+      owner: bacula
+      group: bacula
+      src: '{{ bacula_master_rsacert }}'
+      dest: '{{ bacula_encrypt_installdir }}'
+
+  - name: Generate bacula-fd combined PEM
+    become: yes
+    assemble:
+      mode: 'u=rw,g=,o='
+      owner: bacula
+      group: bacula
+      src: '{{ bacula_fd_keydir }}/'
+      dest: '{{ bacula_fd_rsapem }}'
+      regexp: 'bacula-fd.(cert|key)'
+      remote_src: no
