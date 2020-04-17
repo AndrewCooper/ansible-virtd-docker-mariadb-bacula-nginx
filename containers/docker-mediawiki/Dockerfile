@@ -45,7 +45,6 @@ RUN mkdir -p /usr/src/mediawiki /var/www-shared/html && \
 
 # copy over files
 COPY \
-    config/000-default-ssl.conf \
     config/000-default.conf \
     config/000-wiki.conf \
         /etc/apache2/sites-available/

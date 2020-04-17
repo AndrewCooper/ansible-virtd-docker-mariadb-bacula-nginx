@@ -41,7 +41,6 @@ a2enmod \
 
 # Enable the site
 a2ensite \
-  000-default-ssl.conf \
   000-default.conf \
   000-mantisbt.conf
 

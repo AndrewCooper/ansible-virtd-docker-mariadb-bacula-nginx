@@ -51,7 +51,6 @@ RUN mkdir -p /usr/src/mantisbt /var/www-shared/html && \
 
 # copy over files
 COPY \
-    config/000-default-ssl.conf \
     config/000-default.conf \
     config/000-mantisbt.conf \
         /etc/apache2/sites-available/

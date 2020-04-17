@@ -66,7 +66,6 @@ case ${1} in
     AuthLDAPGroupAttributeIsDN off
     <RequireAll>
         Require valid-user
-        Require ssl
         <RequireAny>
             Require ldap-group cn=%{SERVER_NAME},ou=group,dc=novatech
             Require ldap-group cn=${repo_name},cn=%{SERVER_NAME},ou=group,dc=novatech

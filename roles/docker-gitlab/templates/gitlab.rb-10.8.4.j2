@@ -884,7 +884,7 @@ gitlab_rails['smtp_tls'] = true
 
 nginx['enable'] = true
 # nginx['client_max_body_size'] = '250m'
-nginx['redirect_http_to_https'] = true
+# nginx['redirect_http_to_https'] = true
 # nginx['redirect_http_to_https_port'] = 80
 
 ##! Most root CA's are included by default
@@ -896,8 +896,8 @@ nginx['redirect_http_to_https'] = true
 ##! if ssl_verify_client on, verification depth in the client certificates chain
 # nginx['ssl_verify_depth'] = "1"
 
-nginx['ssl_certificate'] = "/etc/ssl/private/nginx.crt"
-nginx['ssl_certificate_key'] = "/etc/ssl/private/nginx.key"
+# nginx['ssl_certificate'] = "/etc/ssl/private/nginx.crt"
+# nginx['ssl_certificate_key'] = "/etc/ssl/private/nginx.key"
 # nginx['ssl_ciphers'] = "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256"
 # nginx['ssl_prefer_server_ciphers'] = "on"
 
@@ -911,7 +911,7 @@ nginx['ssl_certificate_key'] = "/etc/ssl/private/nginx.key"
 ##! **Default according to https://nginx.org/en/docs/http/ngx_http_ssl_module.html**
 # nginx['ssl_session_timeout'] = "5m"
 
-nginx['ssl_dhparam'] = "/etc/ssl/private/dhparam.pem" # Path to dhparams.pem, eg. /etc/ssl/private/dhparams.pem
+# nginx['ssl_dhparam'] = "/etc/ssl/private/dhparam.pem" # Path to dhparams.pem, eg. /etc/ssl/private/dhparams.pem
 # nginx['listen_addresses'] = ['*', '[::]']
 
 ##! **Defaults to forcing web browsers to always communicate using only HTTPS**
@@ -924,11 +924,11 @@ nginx['ssl_dhparam'] = "/etc/ssl/private/dhparam.pem" # Path to dhparams.pem, eg
 
 ##! **Override only if you use a reverse proxy**
 ##! Docs: https://docs.gitlab.com/omnibus/settings/nginx.html#setting-the-nginx-listen-port
-# nginx['listen_port'] = nil
+nginx['listen_port'] = 80
 
 ##! **Override only if your reverse proxy internally communicates over HTTP**
 ##! Docs: https://docs.gitlab.com/omnibus/settings/nginx.html#supporting-proxied-ssl
-# nginx['listen_https'] = nil
+nginx['listen_https'] = false
 
 # nginx['custom_gitlab_server_config'] = "location ^~ /foo-namespace/bar-project/raw/ {\n deny all;\n}\n"
 # nginx['custom_nginx_config'] = "include /etc/nginx/conf.d/example.conf;"
