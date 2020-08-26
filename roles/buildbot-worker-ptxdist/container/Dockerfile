@@ -1,7 +1,7 @@
 #
 # Build the main image
 #
-FROM        krallin/ubuntu-tini:trusty
+FROM        ubuntu:14.04
 WORKDIR /buildbot
 
 
@@ -21,11 +21,14 @@ RUN apt-get update \
         docbook-xml \
         docbook-xsl \
         groff-base \
+        libffi-dev \
         libgdk-pixbuf2.0-dev \
         libgtk2.0-bin \
         libicu-dev \
         libncurses5 \
         libncurses5-dev \
+        libpq-dev \
+        libssl-dev \
         libswitch-perl \
         libxml-simple-perl \
         libxml2-utils \
@@ -41,7 +44,6 @@ RUN apt-get update \
         python-dev \
         python-libxml2 \
         python-tdb \
-        python3-dev \
         ruby \
         subversion \
         ss-dev \
@@ -50,28 +52,44 @@ RUN apt-get update \
         wget \
         xsltproc \
         yasm \
+        zlib1g-dev \
 &&  rm -rf /var/lib/apt/lists/*
 
 
+# Test runs produce a great quantity of dead grandchild processes.  In a
+# non-docker environment, these are automatically reaped by init (process 1),
+# so we need to simulate that here.  See https://github.com/Yelp/dumb-init
+RUN curl https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64.deb -Lo /tmp/init.deb \
+&&  dpkg -i /tmp/init.deb \
+&&  rm -f /tmp/init.deb
+
+
 #
-# Install required python packages, and twisted
+# Build and install python, pip, twisted, and buildbot
 #
+ARG BUILDBOT_PYTHON="3.6.12"
+RUN curl https://www.python.org/ftp/python/${BUILDBOT_PYTHON}/Python-${BUILDBOT_PYTHON}.tgz -L | tar -vzx -C /tmp \
+&&  cd "/tmp/Python-${BUILDBOT_PYTHON}" \
+&&  ./configure --enable-optimizations \
+&&  make -j8 \
+&&  make install \
+&&  cd /tmp \
+&&  rm -rf "/tmp/Python-${BUILDBOT_PYTHON}"
+
 ARG BUILDBOT_VERSION
-RUN wget https://bootstrap.pypa.io/get-pip.py \
-&&  python3 get-pip.py --no-cache-dir \
-&&  python3 -m pip --no-cache-dir install \
-        'virtualenv' \
-        'twisted[tls]' \
-        buildbot-worker${BUILDBOT_VERSION:+==${BUILDBOT_VERSION}} \
-&&  rm -rf get-pip.py
+RUN python3 -m pip --no-cache-dir install \
+    'twisted[tls]' \
+    buildbot-worker==${BUILDBOT_VERSION}
 
 
 #
 # Create buildbot user
 #
+ARG BUILDBOT_GID=1000
 ARG BUILDBOT_UID=1000
 COPY buildbot/ /home/buildbot/
-RUN useradd --comment "Buildbot Server" --home-dir "/home/buildbot" --shell "/bin/bash" --uid ${BUILDBOT_UID} --user-group buildbot \
+RUN groupadd --gid ${BUILDBOT_GID} buildbot \
+&&  useradd --comment "Buildbot Server" -g buildbot --home-dir "/home/buildbot" --shell "/bin/bash" --uid ${BUILDBOT_UID} buildbot \
 &&  mkdir -p --mode=0700 "/home/buildbot/.ssh" \
 &&  chown -v -R buildbot:buildbot "/buildbot" \
 &&  chown -v -R buildbot:buildbot "/home/buildbot" \
